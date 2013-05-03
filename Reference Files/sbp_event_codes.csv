@@ -1,0 +1,68 @@
+SBP Event Code,Description
+01,Delivered
+02,Notice Left
+03,Accept or Pickup
+04,Refused
+05,Undeliverable as Addressed
+06,Forwarded
+07,Arrival at Unit
+08,Missent
+09,Return to Sender
+10,Processed
+11,Dead Letter
+14,Arrival at Pickup Point
+15,Mis-shipped
+16,Available for Pickup
+17,Picked Up by Agent
+18,Random Sampling - Oversized
+21,No Such Number
+22,Insufficient Address
+23,Moved - Left No Address
+24,Forward Expired
+25,Addressee Unknown
+26,Vacant
+27,Unclaimed
+28,Other
+29,Other
+31,Return to Sender / Not Picked Up
+32,Dead Mail / Disposed by Post Office
+33,Dead Mail / Sent to Recovery Center
+35,Processed (Registered Mail Only)
+36,Processed (Registered Mail Only)
+38,Processed (Registered Mail Only)
+39,Processed (Registered Mail Only)
+40,Processed (Registered Mail Only)
+41,Received at Opening Unit
+42,USPS Handoff to Shipping Partner
+43,Picked Up
+44,Customer Recall
+45,Dispatched from International Service Center
+46,Duplicate Label ID
+51,Business Closed
+52,Notice Left
+53,Receptacle Blocked
+54,Receptacle Full/Item Oversized
+55,No Secure Location Available
+56,No Authorized Recipient Available
+80,Picked Up by Shipping Partner
+81,Arrived Shipping Partner Facility
+82,Departed Shipping Partner Facility
+A1,Arrive Sort Facility
+AE,Arrived USPS Sort Facility
+BE,Processed
+DE,Depart USPS Sort Facility
+DX,Delivery Status Not Updated
+EF,Dispatched from Sort Facility
+L1,Depart Sort Facility
+MA,Electronic Shipping Info Received
+MR,Picked Up And Processed By Agent
+OA,Origin Acceptance
+OD,Processed at Destination Facility
+OF,Out for Delivery
+PC,Sorting/Processing Complete
+R1,Arrive Sort Facility
+RB,Processed
+SF,Dispatched to Sort Facility
+T1,Depart Sort Facility
+TM,Shipment Acceptance
+U1,Arrive Sort Facility

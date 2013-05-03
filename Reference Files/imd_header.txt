@@ -1,0 +1,1 @@
+Filler 4,Record Type,Zip Code,Sampling ZIP Code,Facility Type,System Date,User ID,Zero Volume Flag,Record Count,Mailer ID,eVS Software Version,Company DAT Version,Change Type,eVS Origin Sample,Site ID,Filler 51

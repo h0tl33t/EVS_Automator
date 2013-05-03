@@ -1,0 +1,40 @@
+Service Type Code,Description,Mail Class,Extra Service Code 1st Service,Extra Service Code 2nd Service
+017,PRS Full Network Service Insurance <= $200,RP,930,
+018,PRS Full Network Service Insurance > $200,RP,931,
+019,Priority Mail Return Service,PM,,
+020,First-Class Package Return Service,FC,,
+022,Ground Return Service,PS,,
+024,PRS Full Network,RP,,
+040,Priority Mail Delivery Confirmation with SBP,PM,920,
+041,Priority Mail Signature Confirmation with SBP,PM,921,
+042,First-Class Mail Delivery Confirmation with SBP,FC,920,
+043,First-Class Mail Signature Confirmation with SBP,FC,921,
+044,Parcel Return Service,RP,,
+117,Priority Mail Return Service,PM,,
+216,First-Class Package Return Service,FC,,
+396,Ground Return,PS,,
+596,Priority Mail Return Service Insurance <= $200,PM,930,
+597,First-Class Package Return Service Insurance <= $200,FC,930,
+598,Ground Return Service Insurance <= $200,PS,930,
+599,Priority Mail Return Service Insurance > $200,PM,931,
+600,First-Class Package Return Service Insurance > $200,FC,931,
+601,Ground Return Service Insurance > $200,PS,931,
+667,Priority Mail Return Service: Ins <= $200 Del Confirmation,PM,930,920
+668,Priority Mail Return Service: Ins > $200 Del Confirmation,PM,931,920
+669,First-Class Pkg Return Service: Ins <= $200 Del Confirmation,FC,930,920
+670,First-Class Pkg Return Service: Ins > $200 Del Confirmation,FC,931,920
+671,Ground Return Ins <= $200 Del Confirmation,PS,930,920
+672,Ground Return Ins > $200 Del Confirmation,PS,931,920
+740,Critical Mail SBP Letters,PM,,
+741,Critical Mail SBP Flats,PM,,
+799,Critical Mail Return Service Flats,PM,,
+816,Critical Mail Return Service Letters,PM,,
+820,Priority Mail Return Service: Signature Confirmation,PM,921,
+821,First-Class Pkg Return Service: Signature Confirmation,FC,921,
+822,Ground Return Service: Signature Confirmation,PS,921,
+823,Priority Mail Return Service: Ins <= $200 Sig Confirmation,PM,930,921
+824,First-Class Pkg Return Service: Ins <= $200 Sig Confirmation,FC,930,921
+825,Ground Return Service: Ins <= $200 Sig Confirmation,PS,930,921
+826,Priority Mail Return Service: Ins > $200 Sig Confirmation,PM,931,921
+827,First-Class Pkg Return Service: Ins <= $200 Sig Confirmation,FC,930,921
+828,Ground Return Service: Ins > $200 Sig Confirmation,PS,931,921
