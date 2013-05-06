@@ -1,5 +1,5 @@
-require './fileBuilder'
-require './evsDataLoader'
+require './file_builder'
+require './evs_data_loader'
 
 #Set necessary variables to allow for OCRA Executable to function on ACE Machines ************************************************
 	$targetPath = File.dirname(ENV['OCRA_EXECUTABLE'].to_s)
@@ -17,8 +17,8 @@ require './evsDataLoader'
 #Otherwise, read all reference files from $targetPath/Reference Files/*
 
 class Manifest
-	include FileBuilder
-	include EVSDataLoader
+	include File_Builder
+	include EVS_Data_Loader
 
 	attr_reader :date, :time, :originZIP
 	attr_accessor :mailer, :mail_class, :rates, :stcs, :header, :details, :trim, :type, :fileName
@@ -115,7 +115,7 @@ end
 #*********************************************************************************************************************************
 
 class HeaderRecord
-	include FileBuilder
+	include File_Builder
 	create_fields_using("#{$targetPath}/Reference Files/header.csv")
 	
 	def initialize(manifest)
@@ -137,7 +137,7 @@ end
 #*********************************************************************************************************************************
 
 class DetailRecord
-	include FileBuilder
+	include File_Builder
 	create_fields_using("#{$targetPath}/Reference Files/detail.csv")
 	
 	def initialize(manifest, rate, *stc)
@@ -306,7 +306,7 @@ end
 #*********************************************************************************************************************************
 
 class Mailer
-	include FileBuilder
+	include File_Builder
 	
 	attr_accessor :mid, :permit, :permitZIP, :nonProfitPermit, :nonProfitPermitZIP, :returnsPermit, :returnsPermitZIP
 	
@@ -379,7 +379,7 @@ end
 #*********************************************************************************************************************************
 
 class Rate
-	include FileBuilder
+	include File_Builder
 	create_fields_using("#{$targetPath}/Reference Files/rates.csv")
 	#create_fields_using essentially provides the following functionality..
 	#attr_accessor :mail_class, :processing_category, :destination_rate_indicator, :rate_indicator, :min_zone, :max_zone, :barcode, :discount_and_surcharge, :min_weight, :max_weight
@@ -423,7 +423,7 @@ end
 #*********************************************************************************************************************************
 
 class ServiceTypeCode #STC
-	include FileBuilder
+	include File_Builder
 	
 	create_fields_using("#{$targetPath}/Reference Files/stcs.csv")
 	#create_fields_using essentially provides the following functionality..
