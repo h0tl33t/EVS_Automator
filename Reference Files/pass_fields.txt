@@ -1,0 +1,1 @@
+Finance Number,SFAS,Destination Facility Type,Facility ZIP,Date of Assessment,Time of Assessment,PIC,Destination ZIP Code,Mail Class,Prebarcoded,USPS Product,Actual Weight,Rectangular,Length,Height,Width,Girth,Cubic Rate,User ID,Barcode Manually Entered
