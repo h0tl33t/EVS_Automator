@@ -1,12 +1,5 @@
 require_relative 'file_builder'
 
-#Set necessary variables to allow for OCRA Executable to function on ACE Machines ************************************************
-	$targetPath = File.dirname(ENV['OCRA_EXECUTABLE'].to_s)
-	$targetPath.gsub!(/\\/,'/')
-	$targetPath = File.expand_path($targetPath) if $targetPath == '.'
-	Dir.chdir($targetPath)
-#*********************************************************************************************************************************
-
 class Mail_Class
 	include File_Builder
 	

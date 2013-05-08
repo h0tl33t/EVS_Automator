@@ -1,16 +1,6 @@
 require_relative 'sample'
 require_relative 'sample_record'
 
-#Set necessary variables to allow for OCRA Executable to function on ACE Machines ************************************************
-	$targetPath = File.dirname(ENV['OCRA_EXECUTABLE'].to_s)
-	$targetPath.gsub!(/\\/,'/')
-	$targetPath = File.expand_path($targetPath) if $targetPath == '.'
-	Dir.chdir($targetPath)
-	if $targetPath != '.'
-		Dir.mkdir("#{$targetPath}/Generated EVS Files/") if File.directory?("#{$targetPath}/Generated EVS Files/") != true
-	end
-#*********************************************************************************************************************************
-
 class Unmanifested_Extract < Sample
 	def initialize(manifest)
 		super(manifest)
