@@ -1,14 +1,12 @@
-require './file_builder'
-require './evs_data_loader'
+require_relative 'file_builder'
 
 class Sample
 	include File_Builder
-	include EVS_Data_Loader
 	
-	attr_accessor :manifest, :records, :sampleFileName, :semFileName, :date, :time
+	attr_accessor :manifest, :records, :fileName, :semFileName, :date, :time
 	
 	def initialize(manifest)
-		@manifest = manifest
+		@manifest = manifest.dup
 		@date = Time.now.strftime('%Y%m%d')
 		@time = Time.now.strftime('%H%M%S')
 		@records = []
@@ -16,24 +14,27 @@ class Sample
 	
 	def generate_records()
 		@manifest.details.each_with_index do |detail, index|
-			record = Object.const_get(self.class.name + "_Record").new(self, detail, index + 1) if self.class == STATS
-			record = Object.const_get(self.class.name + "_Record").new(self, detail) if self.class != STATS
-			@records << record
+			if detail.barcode == '1'
+				record = Object.const_get(self.class.name + "_Record").new(self, detail) unless ['STATS', 'IMD', 'Misshipped_Extract'].include?(self.class.name)
+				record = Object.const_get(self.class.name + "_Record").new(self, detail, index + 1) if self.class.name == 'STATS'
+				record = Object.const_get(self.class.name + "_Record").new(self, detail) if self.class.name == 'IMD' and detail.destination_rate_indicator == self.facilityType
+				record = Object.const_get(self.class.name + "_Record").new(self, detail) if self.class.name == 'Misshipped_Extract' and detail.destination_rate_indicator == 'D' #Only keep DRI 'D" (DDU) detail records for Mis-shipped Extracts
+				@records << record if record
+			end
 		end
 	end
 	
 	def build(sample, delimiter = nil)
 		first = true
-		file = File.open(sample.sampleFileName, 'w')
+		file = File.open(sample.fileName, 'w')
 		sample.records.each do |record|
 			file.write("\n") unless first
-			file.write(record.comb_values.join) unless delimiter
 			file.write(record.comb_values.join(delimiter))
 			first = false
 		end
 		file.close()
 		sem = File.open(sample.semFileName, 'w')
 		sem.close()
-		puts "Built #{sample.class} sample for #{@manifest.mail_class}!"
+		puts "Built #{sample.class} file for #{@manifest.mail_class}!"
 	end
 end

@@ -1,7 +1,8 @@
 #File to test classes and set values.
 
-require './manifestClasses'
-require './sample_generator'
+require_relative 'manifest'
+require_relative 'sample_generator'
+require_relative 'extract_generator'
 
 continue = true
 while continue
@@ -10,5 +11,6 @@ while continue
 	eval(codeToExecute)
 	puts "**************************"
 	puts "Do you want to continue? (Y/N)"
-	continue = false if gets.downcase == 'n'
+	choice = gets.chomp.upcase
+	continue = false if choice == 'N'
 end

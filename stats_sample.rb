@@ -1,6 +1,5 @@
-require './sample'
-require './sample_record'
-require './file_builder'
+require_relative 'sample'
+require_relative 'sample_record'
 
 #Set necessary variables to allow for OCRA Executable to function on ACE Machines ************************************************
 	$targetPath = File.dirname(ENV['OCRA_EXECUTABLE'].to_s)
@@ -15,12 +14,8 @@ require './file_builder'
 class STATS < Sample
 	def initialize(manifest)
 		super(manifest)
-		@sampleFileName = "#{$targetPath}/Generated EVS Files/STATS_#{@date}#{@time}#{@manifest.mail_class}.DAT"
+		@fileName = "#{$targetPath}/Generated EVS Files/STATS_#{@date}#{@time}#{@manifest.mail_class}.DAT"
 		@semFileName = "#{$targetPath}/Generated EVS Files/STATS_#{@date}#{@time}#{@manifest.mail_class}.sem"
-		#@manifest.details.each_with_index do |detail, index|
-		#	record = STATS_Record.new(self, detail, index + 1)
-		#	@records << record
-		#end
 		generate_records()
 		build(self)
 	end

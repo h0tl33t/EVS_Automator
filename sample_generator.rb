@@ -1,20 +1,8 @@
-require './file_builder'
-require './evs_data_loader'
-require './sample'
-require './imd_sample'
-require './stats_sample'
-require './pass_sample'
-require './pos_sample'
-
-#Set necessary variables to allow for OCRA Executable to function on ACE Machines ************************************************
-	$targetPath = File.dirname(ENV['OCRA_EXECUTABLE'].to_s)
-	$targetPath.gsub!(/\\/,'/')
-	$targetPath = File.expand_path($targetPath) if $targetPath == '.'
-	Dir.chdir($targetPath)
-	if $targetPath != '.'
-		Dir.mkdir("#{$targetPath}/Generated EVS Files/") if File.directory?("#{$targetPath}/Generated EVS Files/") != true
-	end
-#*********************************************************************************************************************************
+require_relative 'file_builder'
+require_relative 'imd_sample'
+require_relative 'stats_sample'
+require_relative 'pass_sample'
+require_relative 'pos_sample'
 
 class Sample_Generator
 	include File_Builder
@@ -24,7 +12,6 @@ class Sample_Generator
 	def initialize(manifest)
 		@samples = []
 		@manifest = manifest
-		@manifest.details.delete_if {|detail| detail.barcode != '1'} #Only keep details that have a barcode value of 1 => eligible for sampling
 		@sampleTypes = {'I' => 'IMD', 'S' => 'STATS', 'P' => 'PASS', 'O' => 'POS'}
 		determine_sample_type()
 		self.send("build_#{@type}")

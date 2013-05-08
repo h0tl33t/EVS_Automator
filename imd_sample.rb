@@ -1,6 +1,5 @@
-require './sample'
-require './sample_record'
-require './file_builder'
+require_relative 'sample'
+require_relative 'sample_record'
 
 #Set necessary variables to allow for OCRA Executable to function on ACE Machines ************************************************
 	$targetPath = File.dirname(ENV['OCRA_EXECUTABLE'].to_s)
@@ -20,15 +19,10 @@ class IMD < Sample
 		@facilityType = facilityType
 		@shapes = load_data("#{$targetPath}/Reference Files/shapeIndicators.csv")
 		@sortations = load_data("#{$targetPath}/Reference Files/sortationLevels.csv")
-		@manifest.details.delete_if {|detail| detail.destination_rate_indicator != @facilityType}
-		generate_records()
-		#@manifest.details.each do |detail|
-		#	imd_detail = IMD_Detail.new(self, detail)
-		#	@details << imd_detail
-		#end
-		@records.insert(0, IMD_Header.new(@manifest, @facilityType))
-		@sampleFileName = "#{@manifest.fileName}_IMD_#{@facilityType}.evs"
+		@fileName = "#{@manifest.fileName}_IMD_#{@facilityType}.evs"
 		@semFileName = "#{@manifest.fileName}_IMD_#{@facilityType}.sem"
+		generate_records()
+		@records.insert(0, IMD_Header.new(@manifest, @facilityType, @records.size))
 		build(self)
 	end
 end
@@ -38,12 +32,12 @@ end
 class IMD_Header < Sample_Record
 	create_fields_using("#{$targetPath}/Reference Files/imd_header.txt")
 	
-	def initialize(manifest, facilityType)
-		populate_values_from_baseline("#{$targetPath}/Reference Files/baseline.evs")
+	def initialize(manifest, facilityType, recordCount)
+		populate_values_from_baseline("#{$targetPath}/Reference Files/imd_header_baseline.evs")
 		@zip_code = manifest.header.entry_facility_zip_code
 		@facility_type = convert_facility_type(facilityType)
 		@system_date = "#{Time.now.strftime('%m%d%Y')}"
-		@record_count = manifest.details.size.to_s.rjust(3, '0')
+		recordCount > 999 ? @record_count = '999' : @record_count = recordCount.to_s.rjust(3, '0')
 		@mailer_id = manifest.mailer.mid
 	end
 	
@@ -55,11 +49,12 @@ end
 
 #*********************************************************************************************************************************
 
-class IMD_Detail < Sample_Record
+class IMD_Record < Sample_Record
 	create_fields_using("#{$targetPath}/Reference Files/imd_detail.txt")
 	
 	def initialize(imd, detail)
-		populate_values_from_baseline("#{$targetPath}/Reference Files/baseline.evs")
+		populate_values_from_baseline("#{$targetPath}/Reference Files/imd_detail_baseline.evs")
+		@scan = detail.tracking_number
 		@weight = convert_weight(detail.weight)
 		@length = convert_dimension(detail.length)
 		@height = convert_dimension(detail.height)
@@ -107,9 +102,9 @@ class IMD_Detail < Sample_Record
 	end
 	
 	def convert_dollars(value)
-		wholeNum = value[0,3] #Pulls the whole number portion of the eVS dimension/size convention
-		decimal = value[3, 3] #Pulls the decimal portion
-		return "#{wholeNum}.#{decimal}".rjust(8, '0')
+		wholeNum = value[0,5]
+		decimal = value[5, 2]
+		return "#{wholeNum}.#{decimal}"
 	end
 	
 	def check_if_merchandise_return(stc) #List of all return type STCs.

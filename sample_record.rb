@@ -1,4 +1,4 @@
-require './file_builder'
+require_relative 'file_builder'
 
 class Sample_Record
 	include File_Builder
