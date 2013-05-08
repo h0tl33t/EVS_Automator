@@ -1,0 +1,1 @@
+ocra --output EVSAutomator.exe evs_automator.rb "Reference Files/**/*"
