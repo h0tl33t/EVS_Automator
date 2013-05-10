@@ -1,4 +1,3 @@
-require_relative 'file_builder'
 
 class Mail_Class
 	include File_Builder

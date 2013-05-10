@@ -1,4 +1,3 @@
-require_relative 'file_builder'
 
 class HeaderRecord
 	include File_Builder

@@ -1,7 +1,3 @@
-require_relative 'file_builder'
-require_relative 'misshipped_extract'
-require_relative 'duplicate_package_extract'
-require_relative 'unmanifested_extract'
 
 class Extract_Generator
 	include File_Builder
