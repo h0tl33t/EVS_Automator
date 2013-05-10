@@ -1,8 +1,5 @@
 require_relative 'file_builder'
 require_relative 'imd_sample'
-require_relative 'stats_sample'
-require_relative 'pass_sample'
-require_relative 'pos_sample'
 
 class Sample_Generator
 	include File_Builder
@@ -14,7 +11,7 @@ class Sample_Generator
 		@manifest = manifest
 		@sampleTypes = {'I' => 'IMD', 'S' => 'STATS', 'P' => 'PASS', 'O' => 'POS'}
 		determine_sample_type()
-		self.send("build_#{@type}")
+		self.send("build_#{@type}") if eligible
 	end
 	
 	def determine_sample_type()
@@ -41,6 +38,17 @@ class Sample_Generator
 		facilityTypes = @manifest.pull_facility_types()
 		facilityTypes.each do |type|
 			@samples << IMD.new(@manifest, type)
+		end
+	end
+	
+	def eligible()
+		if @manifest.class.name == 'SBP_Manifest' and @type == 'POS'
+			puts '***WARNING***'
+			puts 'SBP-based POS samples should be created as SBP Files with Scan Event Code 03.'
+			puts 'Returning to main menu..'
+			return false
+		else
+			return true
 		end
 	end
 end

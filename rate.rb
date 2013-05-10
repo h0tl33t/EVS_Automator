@@ -2,7 +2,7 @@ require_relative 'file_builder'
 
 class Rate
 	include File_Builder
-	create_fields_using("#{$targetPath}/Reference Files/rates.csv")
+	create_fields_using("#{$reference_file_path}/rates.csv")
 	#create_fields_using essentially provides the following functionality..
 	#attr_accessor :mail_class, :processing_category, :destination_rate_indicator, :rate_indicator, :min_zone, :max_zone, :barcode, :discount_and_surcharge, :min_weight, :max_weight
 	
@@ -36,5 +36,13 @@ class Rate
 	
 	def is_cubic?()
 		@mail_class == 'PM' and ['CP', 'P5', 'P6', 'P7', 'P8', 'P9'].include?(@rate_indicator)
+	end
+	
+	def is_critical_mail_flat?()
+		@rate_indicator == 'AF'
+	end
+	
+	def is_critical_mail_letter?()
+		@rate_indicator == 'AL'
 	end
 end

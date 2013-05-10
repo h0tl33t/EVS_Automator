@@ -3,7 +3,7 @@ require_relative 'file_builder'
 class ServiceTypeCode #STC
 	include File_Builder
 	
-	create_fields_using("#{$targetPath}/Reference Files/stcs.csv")
+	create_fields_using("#{$reference_file_path}/stcs.csv")
 	#create_fields_using essentially provides the following functionality..
 	#attr_accessor :service_type_code, :mail_class, :extra_service_code_1st_service, :extra_service_code_2nd_service, :extra_service_code_3rd_service, :extra_service_code_4th_service
 	

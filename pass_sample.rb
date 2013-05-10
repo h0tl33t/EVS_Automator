@@ -1,11 +1,8 @@
-require_relative 'sample'
-require_relative 'sample_record'
 
 class PASS < Sample
 	def initialize(manifest)
 		super(manifest)
-		@fileName = "#{$targetPath}/Generated EVS Files/TRP_P1EVS_OUT_#{@date}#{@manifest.mail_class}.pass"
-		@semFileName = "#{$targetPath}/Generated EVS Files/TRP_P1EVS_OUT_#{@date}#{@manifest.mail_class}.sem"
+		set_file_names('.pass')
 		generate_records()
 		build(self, ',')
 	end
@@ -14,10 +11,10 @@ end
 #*********************************************************************************************************************************
 
 class PASS_Record < Sample_Record
-	create_fields_using("#{$targetPath}/Reference Files/pass_fields.txt")
+	create_fields_using("#{$reference_file_path}/pass_fields.txt")
 	
 	def initialize(pass, detail)
-		populate_values_from_baseline("#{$targetPath}/Reference Files/PASS_baseline.pass")
+		populate_values_from_baseline("#{$reference_file_path}/PASS_baseline.pass")
 		@destination_facility_type = detail.destination_rate_indicator
 		@facility_zip = pass.manifest.originZIP
 		@date_of_assessment = pass.date

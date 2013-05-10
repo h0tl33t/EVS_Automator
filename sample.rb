@@ -1,4 +1,3 @@
-require_relative 'file_builder'
 
 class Sample
 	include File_Builder
@@ -6,10 +5,17 @@ class Sample
 	attr_accessor :manifest, :records, :fileName, :semFileName, :date, :time
 	
 	def initialize(manifest)
-		@manifest = manifest.dup
+		@manifest = manifest
 		@date = Time.now.strftime('%Y%m%d')
 		@time = Time.now.strftime('%H%M%S')
 		@records = []
+	end
+	
+	def set_file_names(ext)
+		base_name, sem_name = generate_file_name()
+		@fileName =  "#{base_name}#{ext}"
+		@semFileName = "#{base_name}.sem" unless sem_name
+		@semFileName = "#{sem_name}.sem" if sem_name
 	end
 	
 	def generate_records()

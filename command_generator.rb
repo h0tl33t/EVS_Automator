@@ -1,137 +1,83 @@
-#Unix SSH Copy Command Generator
 
-class Command_Generator
-	def initialize()
-		puts "Generate the SSH command for EVS, SBP, or all? (Enter 'EVS', 'SBP', or 'ALL')"
-		type = gets.chomp.upcase
-		while not ['EVS','SBP','ALL'].include?(type)
-			puts "#{type} is not a valid entry, please re-enter either 'EVS', 'SBP', or 'ALL'."
+module Command_Generator
+	class << self
+		def generate_shell_commands()
+			case set_file_type()
+			when 'EVS'
+				generate_evs_commands()
+				puts "Generated shell commands for EVS."
+			when 'SBP'
+				generate_sbp_commands()
+				puts "Generated shell commands for SBP."
+			when 'ALL'
+				generate_evs_commands()
+				generate_sbp_commands()
+				puts "Generated shell commands for EVS and SBP."
+			end
+		end
+	
+		def set_file_type()
+			puts "Generate the SSH command for EVS, SBP, or all? (Enter 'EVS', 'SBP', or 'ALL')"
 			type = gets.chomp.upcase
-		end
-
-		case type
-		when 'EVS'
-			commGen('Generated EVS Files') #Pass the name of the sub-folder containing the files.
-		when 'SBP'
-			commGen('Generated SBP Files') #Pass the name of the sub-folder containing the files.
-		when 'ALL'
-			commGen('Generated EVS Files') #Pass the name of the sub-folder containing the files.
-			commGen('Generated SBP Files') #Pass the name of the sub-folder containing the files.
-		end
-		exit()
-	end
-	#*********************************************************************************************************************************
-	def commGen(targetFolder)
-		fullPath = "#{$targetPath}/#{targetFolder}"
-		puts "Found #{fullPath}!" if File.exists?(fullPath)
-		foundSBPManifests = false
-		wrote = false
-		sbpWrote = false
-		count = 0
-		
-		manifests = Dir.glob("#{fullPath}/*.raw")
-		imds = Dir.glob("#{fullPath}/*.evs")
-		stats = Dir.glob("#{fullPath}/STATS*.dat")
-		pass = Dir.glob("#{fullPath}/*.pass")
-		pos = Dir.glob("#{fullPath}/*.pos")
-		sbpFiles = Dir.glob("#{fullPath}/PTS-SBP*.dat")
-		extracts = Dir.glob("#{fullPath}/PTSExtract*.dat")
-		extractSems = Dir.glob("#{fullPath}/PTSArrival*.sem")
-
-		File.delete("#{fullPath}/shellCommand.txt") if File.exists?("#{fullPath}/shellCommand.txt") #Delete any existing shellCommand files.
-		File.delete("#{fullPath}/shellCommand(SBPManifests).txt") if File.exists?("#{fullPath}/shellCommand(SBPManifests).txt") #Delete any existing shellCommand files.
-		commandFile = File.open("#{fullPath}/shellCommand.txt",'w')
-		sbpManCommFile, foundSBPManifests = File.open("#{fullPath}/shellCommand(SBPManifests).txt",'w'), true if targetFolder == 'Generated SBP Files' and manifests.empty? != true
-		
-		puts "*****************************************************************"
-		puts "Core file name(s) for file(s) found:"
-		manifests.each do |manifestFile|
-			count = count + 1
-			file = /\S+\W/.match(File.basename(manifestFile)).to_s.delete('.')
-			puts "#{count}) #{file}"
-			if targetFolder == 'Generated EVS Files'
-				commandFile.write(" && ") if wrote
-				commandFile.write("cp -p #{file}.* /pone/qpone/a03shared/CAT/evs/PTSManifest")
-				wrote = true
+			while not ['EVS','SBP','ALL'].include?(type)
+				puts "#{type} is not a valid entry, please re-enter either 'EVS', 'SBP', or 'ALL'."
+				type = gets.chomp.upcase
 			end
+			return type
+		end
+		
+		def generate_evs_commands()
+			commands = determine_commands(Dir.glob("#{$evs_file_path}/*"), evs_match_guide)
+			write_commands_to_file(commands, $evs_file_path)
+		end
+		
+		def generate_sbp_commands()
+			sbp_manifests = Dir.glob("#{$sbp_file_path}/*.raw")
+			sbp_manifest_commands = determine_commands(sbp_manifests, sbp_match_guide)
+			write_commands_to_file(sbp_manifest_commands, $sbp_file_path, '(SBP Manifests)')
 			
-			if foundSBPManifests
-				sbpManCommFile.write(" && ") if sbpWrote
-				sbpManCommFile.write("cp -p #{file}.* /pone/qpone/a03shared/CAT/evs/PTSManifest") if targetFolder == 'Generated SBP Files'
-				sbpWrote = true
+			sbp_files = Dir.glob("#{$sbp_file_path}/*").delete_if {|file| /raw/.match(file)}
+			sbp_file_commands = determine_commands(sbp_files, sbp_match_guide)
+			write_commands_to_file(sbp_file_commands, $sbp_file_path)
+		end
+	
+		def determine_commands(files, matches_with_paths)
+			commands = []
+			files.each do |file|
+				matches_with_paths.each_pair do |match, target_path|
+					commands << "cp -p #{/\S+\W/.match(File.basename(file))}* #{target_path}" if match =~ file
+				end
 			end
+			return commands
 		end
-
-		imds.each do |imdFile|
-			count = count + 1
-			file = /\S+\W/.match(File.basename(imdFile)).to_s.delete('.')
-			puts "#{count}) #{file}"
-			commandFile.write(" && ") if wrote
-			commandFile.write("cp -p #{file}.* /pone/qpone/a03shared/CAT/evs/STATS")
-			wrote = true
+	
+		def evs_match_guide()
+			guide = {
+				/.raw/ => "/pone/qpone/a03shared/CAT/evs/PTSManifest",
+				/.evs/ => "/pone/qpone/a03shared/CAT/evs/STATS",
+				/STATS.*dat/ => "/pone/qpone/a03shared/CAT/evs/STATS",
+				/.pass/ => "/pone/qpone/a03shared/CAT/evs/STATS",
+				/.pos/ => "/pone/qpone/a03shared/CAT/evs/STATS",
+				/PTSExtract.*.dat/ => "/pone/qpone/a03shared/CAT/evs/PTSExtract",
+				/PTSArrival.*.sem/ => "/pone/qpone/a03shared/CAT/evs/PTSExtract"}
 		end
-		
-		stats.each do |statsFile|
-			count = count + 1
-			file = /\S+\W/.match(File.basename(statsFile)).to_s.delete('.')
-			puts "#{count}) #{file}"
-			commandFile.write(" && ") if wrote
-			commandFile.write("cp -p #{file}.* /pone/qpone/a03shared/CAT/evs/STATS") if targetFolder == 'Generated EVS Files'
-			commandFile.write("cp -p #{file}.* /pone/qpone/a03shared/CAT/sbp/stats") if targetFolder == 'Generated SBP Files'
-			wrote = true
+	
+		def sbp_match_guide()
+			guide = {
+				/.raw/ => "/pone/qpone/a03shared/CAT/evs/PTSManifest",
+				/PTS-SBP.*.dat/ => "/pone/qpone/a03shared/CAT/sbp/pts",
+				/.evs/ => "/pone/qpone/a03shared/CAT/evs/STATS",
+				/STATS.*dat/ => "/pone/qpone/a03shared/CAT/sbp/stats",
+				/.pass/ => "/pone/qpone/a03shared/CAT/sbp/pass",
+				/.pos/ => "/pone/qpone/a03shared/CAT/sbp/pts"}
 		end
-		
-		pass.each do |passFile|
-			count = count + 1
-			file = /\S+\W/.match(File.basename(passFile)).to_s.delete('.')
-			puts "#{count}) #{file}"
-			commandFile.write(" && ") if wrote
-			commandFile.write("cp -p #{file}.* /pone/qpone/a03shared/CAT/evs/STATS") if targetFolder == 'Generated EVS Files'
-			commandFile.write("cp -p #{file}.* /pone/qpone/a03shared/CAT/sbp/pass") if targetFolder == 'Generated SBP Files'
-			wrote = true
+	
+		def write_commands_to_file(commands, path, classifier = nil)
+			puts "Writing the following shell commands for the files found at #{path}:"
+			puts commands.join("\n")
+			file = File.open("#{path}/shell_commands#{classifier}.txt", 'w')
+			file.write(commands.join(" && "))
+			file.close()
 		end
-		
-		pos.each do |posFile|
-			count = count + 1
-			file = /\S+\W/.match(File.basename(posFile)).to_s.delete('.')
-			puts "#{count}) #{file}"
-			commandFile.write(" && ") if wrote
-			commandFile.write("cp -p #{file}.* /pone/qpone/a03shared/CAT/evs/STATS") if targetFolder == 'Generated EVS Files'
-			commandFile.write("cp -p #{file}.* /pone/qpone/a03shared/CAT/sbp/pts") if targetFolder == 'Generated SBP Files'
-			wrote = true
-		end
-		
-		sbpFiles.each do |sbpFile|
-			count = count + 1
-			file = /\S+\W/.match(File.basename(sbpFile)).to_s.delete('.')
-			puts "#{count}) #{file}"
-			commandFile.write(" && ") if wrote
-			commandFile.write("cp -p #{file}.* /pone/qpone/a03shared/CAT/sbp/pts")
-			wrote = true
-		end
-		
-		extracts.each do |extract|
-			count = count + 1
-			file = /\S+\W/.match(File.basename(extract)).to_s.delete('.')
-			puts "#{count}) #{file}"
-			commandFile.write(" && ") if wrote
-			commandFile.write("cp -p #{file}.* /pone/qpone/a03shared/CAT/evs/PTSExtract")
-			wrote = true
-		end
-		
-		extractSems.each do |sem|
-			count = count + 1
-			file = /\S+\W/.match(File.basename(sem)).to_s.delete('.')
-			puts "#{count}) #{file}"
-			commandFile.write(" && ") if wrote
-			commandFile.write("cp -p #{file}.* /pone/qpone/a03shared/CAT/evs/PTSExtract")
-			wrote = true
-		end
-		puts "*****************************************************************"
-		commandFile.close()
-		sbpManCommFile.close() if foundSBPManifests
-		puts "Wrote shell commands to #{fullPath}/shellCommand.txt!" if targetFolder == 'Generated EVS Files' or not foundSBPManifests
-		puts "Wrote shell commands to #{fullPath}/shellCommand.txt and shellCommand(SBPManifests).txt!" if foundSBPManifests
 	end
-	#*********************************************************************************************************************************
 end

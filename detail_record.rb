@@ -1,6 +1,6 @@
 require_relative 'file_builder'
 
-class DetailRecord
+class Detail_Record
 	include File_Builder
 	create_fields_using("#{$targetPath}/Reference Files/detail.csv")
 	
@@ -12,7 +12,7 @@ class DetailRecord
 		end
 		generate_PIC(manifest, stc[0])
 		generate_weight(rate)
-		set_mailer_info(manifest.mailer, rate)
+		stc[0] ? set_mailer_info(manifest.mailer, rate, stc[0]) : set_mailer_info(manifest.mailer, rate)
 		evaluate_extra_services(stc[0]) if stc[0] #Evaluate extra services if any STC object was passed for detail generation.
 		continue_build_options(rate)
 	end
@@ -58,7 +58,7 @@ class DetailRecord
 		@destination_zip_code = zips[@domestic_zone]
 	end
 	
-	def set_mailer_info(mailer, rate)
+	def set_mailer_info(mailer, rate, stc = nil)
 		@mail_owner_mailer_id = mailer.mid
 		if rate.non_profit?
 			mailer.set_non_profit_permit unless mailer.nonProfitPermit
@@ -123,7 +123,7 @@ end
 
 #*********************************************************************************************************************************
 
-class InternationalDetailRecord < DetailRecord #Need to inherit PIC and be able to modify it in accordance with International Mail Classes.
+class International_Detail_Record < Detail_Record #Need to inherit PIC and be able to modify it in accordance with International Mail Classes.
 	def initialize(manifest, rate)
 		super(manifest, rate)
 	end
@@ -164,5 +164,40 @@ class InternationalDetailRecord < DetailRecord #Need to inherit PIC and be able 
 			@destination_country_code = temp[rand(temp.size)]
 			@customer_reference_number_1 = info[@destination_country_code]
 		end
+	end
+end
+
+#*********************************************************************************************************************************
+
+class SBP_Detail_Record < Detail_Record
+	def initialize(manifest, rate, stc)
+		super(manifest, rate, stc)
+	end
+	
+	def continue_build_options(rate)
+		generate_zone(rate)
+		generate_ZIP()
+		evaluate_discounts_and_surcharges(rate)
+		evaluate_dim_weight(rate)
+		evaluate_cubic(rate)
+	end
+	
+	def set_mailer_info(mailer, rate, stc)
+		@mail_owner_mailer_id = mailer.mid
+		if /Return/.match(stc.description)
+			mailer.set_returns_permit unless mailer.returnsPermit
+			mailer.set_returns_permit_ZIP unless mailer.returnsPermitZIP
+			@payment_account_number = mailer.returnsPermit
+			@post_office_of_account_zip_code = mailer.returnsPermitZIP
+		else
+			@payment_account_number = mailer.permit
+			@post_office_of_account_zip_code = mailer.permitZIP
+		end
+	end
+	
+	def evaluate_extra_services(stc)
+		@value_of_article = '0010000' if stc.comb_values.include?('930')
+		@value_of_article = '0050000' if stc.comb_values.include?('931')
+		@cod_amount_due_sender = '0005000' if stc.comb_values().include?('915')
 	end
 end

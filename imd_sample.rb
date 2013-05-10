@@ -1,5 +1,3 @@
-require_relative 'sample'
-require_relative 'sample_record'
 
 class IMD < Sample
 	attr_accessor :facilityType, :shapes, :sortations 
@@ -7,10 +5,9 @@ class IMD < Sample
 	def initialize(manifest, facilityType)
 		super(manifest)
 		@facilityType = facilityType
-		@shapes = load_data("#{$targetPath}/Reference Files/shapeIndicators.csv")
-		@sortations = load_data("#{$targetPath}/Reference Files/sortationLevels.csv")
-		@fileName = "#{@manifest.fileName}_IMD_#{@facilityType}.evs"
-		@semFileName = "#{@manifest.fileName}_IMD_#{@facilityType}.sem"
+		@shapes = load_data("#{$reference_file_path}/shapeIndicators.csv")
+		@sortations = load_data("#{$reference_file_path}/sortationLevels.csv")
+		set_file_names('.evs')
 		generate_records()
 		@records.insert(0, IMD_Header.new(@manifest, @facilityType, @records.size))
 		build(self)
@@ -20,10 +17,10 @@ end
 #*********************************************************************************************************************************
 
 class IMD_Header < Sample_Record
-	create_fields_using("#{$targetPath}/Reference Files/imd_header.txt")
+	create_fields_using("#{$reference_file_path}/imd_header.txt")
 	
 	def initialize(manifest, facilityType, recordCount)
-		populate_values_from_baseline("#{$targetPath}/Reference Files/imd_header_baseline.evs")
+		populate_values_from_baseline("#{$reference_file_path}/imd_header_baseline.evs")
 		@zip_code = manifest.header.entry_facility_zip_code
 		@facility_type = convert_facility_type(facilityType)
 		@system_date = "#{Time.now.strftime('%m%d%Y')}"
@@ -40,10 +37,10 @@ end
 #*********************************************************************************************************************************
 
 class IMD_Record < Sample_Record
-	create_fields_using("#{$targetPath}/Reference Files/imd_detail.txt")
+	create_fields_using("#{$reference_file_path}/imd_detail.txt")
 	
 	def initialize(imd, detail)
-		populate_values_from_baseline("#{$targetPath}/Reference Files/imd_detail_baseline.evs")
+		populate_values_from_baseline("#{$reference_file_path}/imd_detail_baseline.evs")
 		@scan = detail.tracking_number
 		@weight = convert_weight(detail.weight)
 		@length = convert_dimension(detail.length)

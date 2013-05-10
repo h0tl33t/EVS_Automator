@@ -1,11 +1,8 @@
-require_relative 'sample'
-require_relative 'sample_record'
 
 class Misshipped_Extract < Sample
 	def initialize(manifest)
 		super(manifest)
-		@fileName = "#{$targetPath}/Generated EVS Files/PTSExtract_Misship#{@date}_#{@manifest.mail_class}.dat"
-		@semFileName = "#{$targetPath}/Generated EVS Files/PTSArrival_Misship#{@date}_#{@manifest.mail_class}.sem"
+		set_file_names('.dat')
 		generate_records()
 		build(self)
 	end

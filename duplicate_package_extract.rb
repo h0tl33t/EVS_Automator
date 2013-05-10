@@ -4,8 +4,7 @@ require_relative 'sample_record'
 class Duplicate_Package_Extract < Sample
 	def initialize(manifest)
 		super(manifest)
-		@fileName = "#{$targetPath}/Generated EVS Files/PTSExtractManDup#{@date}_#{@manifest.mail_class}.dat"
-		@semFileName = "#{$targetPath}/Generated EVS Files/PTSExtractManDup#{@date}_#{@manifest.mail_class}.sem"
+		set_file_names('.dat')
 		generate_records()
 		build(self)
 	end

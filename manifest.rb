@@ -1,10 +1,3 @@
-require_relative 'file_builder'
-require_relative 'mailer'
-require_relative 'mail_class'
-require_relative 'rate'
-require_relative 'service_type_code'
-require_relative 'header_record'
-require_relative 'detail_record'
 
 class Manifest
 	include File_Builder
@@ -21,7 +14,7 @@ class Manifest
 		@mail_class = mail_class || Mail_Class.new.code
 		@mail_class == 'RP' ? @type = '3' : @type = '1' #RP is a returns product, which requires a type '3' manifest.  Otherwise, set to type '1'.
 		determine_rate_ingredients()
-		@fileName = generate_file_name(self.class, @mail_class, @date, @time, @trim)
+		@fileName = generate_file_name()
 		@mail_class.domestic? ? generate_domestic_details() : generate_international_details()
 		@header = HeaderRecord.new(self)
 		build_raw()
@@ -31,32 +24,32 @@ class Manifest
 	end
 	
 	def determine_rate_ingredients()
-		@rates = load_rate_ingredients(Rate, "#{$targetPath}/Reference Files/rates.csv", @mail_class)
+		@rates = load_rate_ingredients(Rate, "#{$reference_file_path}/rates.csv", @mail_class)
 		if @mail_class.domestic?
 			puts "Use all Rate and Extra Service Combinations or just Rates? (Enter 'a' for all or 'r' for rates only)"
 			@trim = gets.chomp.downcase
 			@trim = validate(@trim) do |t|
 				['a', 'r'].include?(t)
 			end
-			@stcs = load_rate_ingredients(ServiceTypeCode, "#{$targetPath}/Reference Files/stcs.csv", @mail_class) #Currently, only domestic mail classes have STC codes/extra services.
+			@stcs = load_rate_ingredients(ServiceTypeCode, "#{$reference_file_path}/stcs.csv", @mail_class) #Currently, only domestic mail classes have STC codes/extra services.
 		end
 	end
 	
 	def generate_domestic_details()
 		if @trim == 'r'
 			@rates.each do |rate|
-				detail = DetailRecord.new(self, rate, @stcs.simplest)
+				detail = Detail_Record.new(self, rate, @stcs.simplest)
 				@details << detail
 			end
 		else
 			@rates.each do |rate|
 				if rate.is_open_and_distribute? #For all-type (trim level 'a') manifests, skip the stc-iteration for O&D rates.  They have specific STC/Extra Service Combinations.
-					detail = DetailRecord.new(self, rate, @stcs.simplest)
+					detail = Detail_Record.new(self, rate, @stcs.simplest)
 					@details << detail
 					next
 				end
 				@stcs.each do |stc|
-					detail = DetailRecord.new(self, rate, stc)
+					detail = Detail_Record.new(self, rate, stc)
 					@details << detail
 				end
 			end
@@ -65,7 +58,7 @@ class Manifest
 	
 	def generate_international_details()
 		@rates.each do |rate|
-			detail = InternationalDetailRecord.new(self, rate)
+			detail = International_Detail_Record.new(self, rate)
 			@details << detail
 		end
 	end
@@ -78,14 +71,6 @@ class Manifest
 		types = []
 		@details.each {|detail| types << detail.destination_rate_indicator}
 		return types.uniq
-	end
-	
-	def delete_detail(&criteria)
-		@details.each_with_index do |detail, index|
-			@details.delete_at(index) if criteria.call(detail)
-		end
-		criteria = lambda {@details.find_index {|d| d == detail}}
-		self.details.delete_at(criteria.call)
 	end
 end
 

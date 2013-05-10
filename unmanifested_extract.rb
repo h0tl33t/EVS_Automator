@@ -1,11 +1,8 @@
-require_relative 'sample'
-require_relative 'sample_record'
 
 class Unmanifested_Extract < Sample
 	def initialize(manifest)
 		super(manifest)
-		@fileName = "#{$targetPath}/Generated EVS Files/PTSExtractWkly-Unman#{@date}_#{@manifest.mail_class}.dat"
-		@semFileName = "#{$targetPath}/Generated EVS Files/PTSArrivalWkly-Unman#{@date}_#{@manifest.mail_class}.sem"
+		set_file_names('.dat')
 		modify_pics_for(@manifest)
 		generate_records()
 		build(self)

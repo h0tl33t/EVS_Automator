@@ -1,11 +1,8 @@
-require_relative 'sample'
-require_relative 'sample_record'
 
 class STATS < Sample
 	def initialize(manifest)
 		super(manifest)
-		@fileName = "#{$targetPath}/Generated EVS Files/STATS_#{@date}#{@time}#{@manifest.mail_class}.DAT"
-		@semFileName = "#{$targetPath}/Generated EVS Files/STATS_#{@date}#{@time}#{@manifest.mail_class}.sem"
+		set_file_names('.DAT')
 		generate_records()
 		build(self)
 	end
@@ -14,10 +11,10 @@ end
 #*********************************************************************************************************************************
 
 class STATS_Record < Sample_Record
-	create_fields_using("#{$targetPath}/Reference Files/stats_fields.txt")
+	create_fields_using("#{$reference_file_path}/stats_fields.txt")
 	
 	def initialize(stats, detail, recordNumber)
-		populate_values_from_baseline("#{$targetPath}/Reference Files/STATS_baseline.DAT")
+		populate_values_from_baseline("#{$reference_file_path}/STATS_baseline.DAT")
 		@test_date = stats.date
 		@record_number = recordNumber.to_s.rjust(4, ' ')
 		@sample_pounds, @sample_ounces = convert_weight(detail.weight)
@@ -33,6 +30,7 @@ class STATS_Record < Sample_Record
 		@destination_zip_code = detail.destination_zip_code
 		@laptop_system_date = stats.date
 		@marking = determine_marking_for(stats.manifest.mail_class)
+		modify_for_SBP(stats)
 	end
 	
 	#Re-format weight for STATS Files
@@ -119,6 +117,20 @@ class STATS_Record < Sample_Record
 			return '36'
 		else
 			return '00'
+		end
+	end
+	
+	def modify_for_SBP(stats)
+		if stats.manifest.class.name == 'SBP_Manifest'
+			self.class.class_eval do
+				define_method 'origin_zip=' do |val|
+					self.instance_variable_set('@origin_zip', val)
+				end
+				define_method 'origin_zip' do
+					self.instance_variable_get('@origin_zip')
+				end
+			end
+			@origin_zip = stats.manifest.originZIP[0,3]
 		end
 	end
 end
