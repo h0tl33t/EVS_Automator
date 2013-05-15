@@ -57,7 +57,7 @@ class EVS_Automator
 			@manifest = Manifest.new(@mailer, @mail_class)
 			Check_Rates.check_rates_for(@manifest) if execute_check_rates?(@manifest.mail_class)
 			Sample_Generator.new(@manifest) if sample?(@manifest.mail_class)
-			if @manifest.mail_class.domestic?
+			if @manifest.mail_class.domestic? #Disable extracts for international mail classes.
 				Extract_Generator.new(@manifest) if extract?(@manifest.mail_class)
 			end
 		when '2' #Generate SBP Files

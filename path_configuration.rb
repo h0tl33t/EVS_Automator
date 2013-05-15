@@ -16,12 +16,8 @@ module Path_Configuration
 		end
 	
 		def initialize_reference_directories()
-			if $targetPath != '.'
-				Dir.mkdir("#{$targetPath}/Generated EVS Files/") if File.directory?("#{$targetPath}/Generated EVS Files/") != true
-				Dir.mkdir("#{$targetPath}/Generated SBP Files/") if File.directory?("#{$targetPath}/Generated SBP Files/") != true
-				Dir.mkdir("#{$targetPath}/Rate Validations/") if File.directory?("#{$targetPath}/Rate Validations/") != true
-				Dir.mkdir("#{$targetPath}/Reference Files/") if File.directory?("#{$targetPath}/Reference Files/") != true
-				Dir.mkdir("#{$targetPath}/Reference Files/Rate Tables/") if File.directory?("#{$targetPath}/Reference Files/Rate Tables/") != true
+			[$evs_file_path, $sbp_file_path, $rate_validation_path, $reference_file_path, $rate_table_path].each do |path|
+				Dir.mkdir(path) unless File.directory?(path)
 			end
 		end
 	
