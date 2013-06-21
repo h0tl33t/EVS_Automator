@@ -19,11 +19,11 @@ class Rate
 	end
 	
 	def discount?()
-		['*', 'N1'].include?(@discount_and_surcharge) ? false : @discount_and_surcharge #Any discount and surcharge value that is not '*' or 'N1' is a discount type.
+		['*', 'N1', 'E1', 'G1'].include?(@discount_and_surcharge) ? false : @discount_and_surcharge #Any discount and surcharge value that is not '*' or 'N1' is a discount type.
 	end
 	
 	def surcharge?()
-		@discount_and_surcharge == 'N1' ? @discount_and_surcharge : false #N1 is the only valid surcharge type in EVS.
+		['N1', 'E1', 'G1'].include?(@discount_and_surcharge) ? @discount_and_surcharge : false #N1 is the only valid surcharge type in EVS.
 	end
 	
 	def is_military_box?()

@@ -1,1 +1,14 @@
-ocra --output EVSAutomator.exe evs_automator.rb "Reference Files/**/*"
+ocra --output EVSAutomator.exe --no-lzma evs_automator.rb "Reference Files/**/*"
+
+NOTE:  For some reason, as of 6/21/2013, the OCRA LZMA compression throws an unhandled exception.
+
+Instructions:
+Open command prompt
+Navigate to the directory where the evs_automator.rb file lies
+Copy the first line of this file (ocra command)
+Paste in the command prompt and hit enter to execute
+It will open the automator
+Create a manifest
+Hit option 3 (Validate EVS Rates) to run the web-driver module
+Choose the google option (it will just open and close)
+*Important so that Ocra auto-detects the gems necessary for Watir/web-driving
