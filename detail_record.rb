@@ -4,16 +4,16 @@ class Detail_Record
 	include File_Builder
 	create_fields_using("#{$targetPath}/Reference Files/detail.csv")
 	
-	def initialize(manifest, rate, *stc)
+	def initialize(manifest, rate, stc = nil)
 		populate_values_from_baseline("#{$targetPath}/Reference Files/baseline.raw")
 		self.instance_variables.each do |var|
 			self.set(var, rate.get(var)) if rate.instance_variables.include?(var) #Update the detail record with rate information for each shared field
-			self.set(var, stc[0].get(var)) if stc[0] and stc[0].instance_variables.include?(var)   #Update the detail record with STC information for each shared field
+			self.set(var, stc.get(var)) if stc and stc.instance_variables.include?(var)   #Update the detail record with STC information for each shared field
 		end
-		generate_PIC(manifest, stc[0])
+		generate_PIC(manifest, stc)
 		generate_weight(rate)
-		stc[0] ? set_mailer_info(manifest.mailer, rate, stc[0]) : set_mailer_info(manifest.mailer, rate)
-		evaluate_extra_services(stc[0]) if stc[0] #Evaluate extra services if any STC object was passed for detail generation.
+		stc ? set_mailer_info(manifest.mailer, rate, stc) : set_mailer_info(manifest.mailer, rate)
+		evaluate_extra_services(stc) if stc #Evaluate extra services if any STC object was passed for detail generation.
 		continue_build_options(rate)
 	end
 	
@@ -118,6 +118,17 @@ class Detail_Record
 			dimension = wholeNum + decimal
 			@length, @width, @height = dimension, dimension, dimension
 		end
+	end
+
+	def extra_services()
+		extra_services_found = []
+		(1..5).each do |number|
+			position_text = {1 => '1st', 2 => '2nd', 3 => '3rd', 4 => '4th', 5 => '5th'} 
+			code = self.send("extra_service_code_#{position_text[number]}_service")
+			fee = self.send("extra_service_fee_#{position_text[number]}_service")
+			extra_services_found << {'extra_service_code' => code, 'fee' => fee} unless code.size == 0 #If an extra service code is not blank ('   '), add it to array.
+		end
+		extra_services_found.empty? ? false : extra_services_found #Return false if no extra services found, otherwise return the extra service codes.
 	end
 end
 

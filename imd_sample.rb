@@ -29,7 +29,7 @@ class IMD_Header < Sample_Record
 	end
 	
 	def convert_facility_type(type)
-		facilityTypes = {'D' => '1', 'S' => '2', 'B' => '3', 'F' => '4', 'N' => '5'} #DDU = D, SCF = S, NDC = B, ASF = F, None = N
+		facilityTypes = {'D' => '1', 'S' => '2', 'B' => '3', 'F' => '4', 'N' => '5', 'I' => '5'} #DDU = D, SCF = S, NDC = B, ASF = F, None = N, I = ?
 		return facilityTypes[type]
 	end
 end
@@ -41,7 +41,7 @@ class IMD_Record < Sample_Record
 	
 	def initialize(imd, detail)
 		populate_values_from_baseline("#{$reference_file_path}/imd_detail_baseline.evs")
-		@scan = detail.tracking_number
+		@scan = detail.tracking_number.ljust(34, ' ')
 		@weight = convert_weight(detail.weight)
 		@length = convert_dimension(detail.length)
 		@height = convert_dimension(detail.height)
