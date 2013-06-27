@@ -50,7 +50,7 @@ class IMD_Record < Sample_Record
 		@delivery_zip_code = detail.destination_zip_code
 		@shape_based_rate_indicator = imd.shapes.find {|shape| shape == detail.rate_indicator} || 'NA'
 		@sortation_level = imd.sortations.find {|sort| sort == detail.rate_indicator} || 'NA'
-		@shape_based_rate_indicator, @sortation_level = check_for_special_cases(detail) if detail.mail_class == 'IE'
+		@shape_based_rate_indicator, @sortation_level = check_for_special_cases(detail) if detail.mail_class == 'IE' or ['B4','B5','B6','B7','B8','B9'].include?(detail.rate_indicator)
 		@processing_category = detail.processing_category
 		@package_size_and_other_criteria_indicator ||= 'N'
 		detail.comb_values.include?('920') ? @delivery_confirmation = 'Y' : @delivery_confirmation = 'N' #Extra Service Code 920 is Delivery Confirmation
@@ -74,6 +74,8 @@ class IMD_Record < Sample_Record
 		detail.comb_values.include?('922') ? @adult_signature = 'Y' : @adult_signature = 'N' #Extra Service Code 921 is Adult Signature
 		detail.comb_values.include?('985') ? @hold_for_pick_up = 'Y' : @hold_for_pick_up = 'N' #Extra Service Code 921 is Hold for Pick Up
 		detail.comb_values.include?('990') ? @day_certain_delivery = 'Y' : @day_certain_delivery = 'N' #Extra Service Code 921 is Day Certain Delivery
+		@discount_or_premium = detail.discount_type if detail.discount_type != ''
+		@discount_or_premium = detail.surcharge_type if detail.surcharge_type != ''
 	end
 	
 	def convert_weight(weight)
@@ -103,5 +105,11 @@ class IMD_Record < Sample_Record
 		return 'F6', 'NA' if detail.rate_indicator == 'E6'
 		return 'F8', 'NA' if detail.rate_indicator == 'E8'
 		return 'NA', 'PA' if detail.rate_indicator == 'PA'
+		return 'SP', 'NA' if detail.rate_indicator == 'B4'
+		return 'SP', 'OS' if detail.rate_indicator == 'B5'
+		return 'SP', 'BN' if detail.rate_indicator == 'B6'
+		return 'SP', 'NA' if detail.rate_indicator == 'B7'
+		return 'SP', 'OS' if detail.rate_indicator == 'B8'
+		return 'SP', 'BN' if detail.rate_indicator == 'B9'
 	end
 end
