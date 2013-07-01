@@ -191,6 +191,7 @@ class SBP_Detail_Record < Detail_Record
 		evaluate_discounts_and_surcharges(rate)
 		evaluate_dim_weight(rate)
 		evaluate_cubic(rate)
+		evaluate_military_box() if rate.is_military_box?
 	end
 	
 	def set_mailer_info(mailer, rate, stc)
