@@ -55,7 +55,7 @@ module Command_Generator
 			guide = {
 				/.raw/ => "/pone/qpone/a03shared/CAT/evs/PTSManifest",
 				/.evs/ => "/pone/qpone/a03shared/CAT/evs/STATS",
-				/STATS.*dat/ => "/pone/qpone/a03shared/CAT/evs/STATS",
+				/STATS.*DAT/ => "/pone/qpone/a03shared/CAT/evs/STATS",
 				/.pass/ => "/pone/qpone/a03shared/CAT/evs/STATS",
 				/.pos/ => "/pone/qpone/a03shared/CAT/evs/STATS",
 				/PTSExtract.*.dat/ => "/pone/qpone/a03shared/CAT/evs/PTSExtract",
