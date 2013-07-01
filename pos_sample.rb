@@ -27,7 +27,7 @@ class POS_Record < Sample_Record
 		@acceptance_date = pos.date
 		@acceptance_time = pos.time
 		@service_type_code = '62'.ljust(4,' ') if detail.mail_class == 'PG' #GXG requires STC to be '62  ', spaces (default) for all other products.
-		@label_id_1 = detail.tracking_number
+		@label_id_1 = detail.tracking_number.ljust(34, ' ')
 		@origin_zip_code = pos.manifest.originZIP
 		@destination_zip_code = detail.destination_zip_code
 		@destination_country_code = detail.destination_country_code.ljust(2, ' ')
