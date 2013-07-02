@@ -34,9 +34,9 @@ class Variance_Grabber
 		roleLink = ''
 		links.each {|eachLink| @main.link(:href, eachLink.href).click if eachLink.href.include?('e-VS Admin Super User')}
 
-		@main.link(:text, 'EVSTENBERG').click
-		sleep(1) until @main.link(:href, "#ui-tabs-2").exists?
-		@main.link(:href, "#ui-tabs-2").click
+		@main.link(:text, 'AUTOMATED TESTING').click
+		#sleep(1) until @main.link(:href, "#ui-tabs-2").exists?
+		#@main.link(:href, "#ui-tabs-2").click
 		sleep(1) until @main.link(:text, 'Total manifest postage').exists?
 		@main.link(:text, 'Total manifest postage').click
 		
@@ -64,7 +64,7 @@ class Variance_Grabber
 				end
 			end
 		else
-			puts "No EFNs were found to match the rate check file(s) in '#{$targetPath}/Rate Validations'."
+			puts "No EFNs were found to match the rate check file(s) in '#{$rate_validation_path}'."
 		end
 	end
 	#*********************************************************************************************************************************
@@ -109,8 +109,8 @@ class Variance_Grabber
 	def grabRateCheckEFNs() #Grab EFNs from Existing Rate Check Files
 		rateCheckEFNs = []
 		varEFNs = []
-		rateCheckFiles = Dir.glob("#{$targetPath}/Rate Validations/*_rateCheck??.csv")
-		varianceFiles = Dir.glob("#{$targetPath}/Rate Validations/*_variance*.csv")
+		rateCheckFiles = Dir.glob("#{$rate_validation_path}/*_rateCheck??.csv")
+		varianceFiles = Dir.glob("#{$rate_validation_path}/*_variance*.csv")
 		
 		varianceFiles.each do |varFile|
 			varEFNs << (/\d{22}/.match(varFile)).to_s #Pulls a 22-digit EFN from the filename then coverts the MatchData object to a string.
@@ -165,7 +165,7 @@ class Variance_Grabber
 			sleep(1)
 		end
 		
-		path = "#{$targetPath}/Rate Validations/#{efn}_variance#{varCount}.csv"
+		path = "#{$rate_validation_path}/#{efn}_variance#{varCount}.csv".gsub(/\//,"\\")
 		box = WIN32OLE.new('Wscript.Shell')
 		
 		puts "Activating File Download box.."

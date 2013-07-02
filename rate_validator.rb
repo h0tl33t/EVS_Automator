@@ -82,13 +82,15 @@ class Rate_Validator
 			bench.report do
 				variance.each do |varRecord|
 					checkRecord = rateCheck.find {|check| check['Tracking Number'] == varRecord['PIC']}
-					matchedTier, matched = "Base Rate", true if varRecord['eVS Postage + Surch ($)'].to_f.round(2) == checkRecord['Base Rate'].to_f.round(2)
-					matchedTier, matched = "Plus Rate", true if varRecord['eVS Postage + Surch ($)'].to_f.round(2) == checkRecord['Plus Rate'].to_f.round(2)
-					matchedTier, matched = "both Base and Plus Rates", true if varRecord['eVS Postage + Surch ($)'].to_f.round(2) == checkRecord['Base Rate'].to_f.round(2) and varRecord['eVS Postage + Surch ($)'].to_f.round(2) == checkRecord['Plus Rate'].to_f.round(2)
-					comparedRecords << ["'#{varRecord['PIC']}'", varRecord['Mail Class'], checkRecord['PC'], varRecord['Rate'], varRecord['Dest Rate'], varRecord['Weight'], checkRecord['Zone'], varRecord['eVS Zone'], checkRecord['Base Rate'], checkRecord['Plus Rate'], varRecord['eVS Postage + Surch ($)'], "Validated at #{matchedTier}"] if matched
-					comparedRecords << ["'#{varRecord['PIC']}'", varRecord['Mail Class'], checkRecord['PC'], varRecord['Rate'], varRecord['Dest Rate'], varRecord['Weight'], checkRecord['Zone'], varRecord['eVS Zone'], checkRecord['Base Rate'], checkRecord['Plus Rate'], varRecord['eVS Postage + Surch ($)'], "Matching rate not found."] unless matched
-					matched = false
-					checkRecord.clear
+					if checkRecord
+						matchedTier, matched = "Base Rate", true if varRecord['eVS Postage + Surch ($)'].to_f.round(2) == checkRecord['Base Rate'].to_f.round(2)
+						matchedTier, matched = "Plus Rate", true if varRecord['eVS Postage + Surch ($)'].to_f.round(2) == checkRecord['Plus Rate'].to_f.round(2)
+						matchedTier, matched = "both Base and Plus Rates", true if varRecord['eVS Postage + Surch ($)'].to_f.round(2) == checkRecord['Base Rate'].to_f.round(2) and varRecord['eVS Postage + Surch ($)'].to_f.round(2) == checkRecord['Plus Rate'].to_f.round(2)
+						comparedRecords << ["'#{varRecord['PIC']}'", varRecord['Mail Class'], checkRecord['PC'], varRecord['Rate'], varRecord['Dest Rate'], varRecord['Weight'], checkRecord['Zone'], varRecord['eVS Zone'], checkRecord['Base Rate'], checkRecord['Plus Rate'], varRecord['eVS Postage + Surch ($)'], "Validated at #{matchedTier}"] if matched
+						comparedRecords << ["'#{varRecord['PIC']}'", varRecord['Mail Class'], checkRecord['PC'], varRecord['Rate'], varRecord['Dest Rate'], varRecord['Weight'], checkRecord['Zone'], varRecord['eVS Zone'], checkRecord['Base Rate'], checkRecord['Plus Rate'], varRecord['eVS Postage + Surch ($)'], "Matching rate not found."] unless matched
+						matched = false
+						checkRecord.clear
+					end
 				end
 				sortedData = comparedRecords.sort_by {|array| array[3]} #Sort by varRecord['Rate'] which is index 3 in each array inside of comparedRecords array
 				logResults(sortedData)
