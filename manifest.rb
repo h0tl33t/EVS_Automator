@@ -38,19 +38,16 @@ class Manifest
 	def generate_domestic_details()
 		if @trim == 'r'
 			@rates.each do |rate|
-				detail = Detail_Record.new(self, rate, @stcs.simplest)
-				@details << detail
+				@details << Detail_Record.new(self, rate, @stcs.simplest)
 			end
 		else
 			@rates.each do |rate|
 				if rate.is_open_and_distribute? #For all-type (trim level 'a') manifests, skip the stc-iteration for O&D rates.  They have specific STC/Extra Service Combinations.
-					detail = Detail_Record.new(self, rate, @stcs.simplest)
-					@details << detail
+					@details << Detail_Record.new(self, rate, @stcs.simplest)
 					next
 				end
 				@stcs.each do |stc|
-					detail = Detail_Record.new(self, rate, stc)
-					@details << detail
+					@details << Detail_Record.new(self, rate, stc) if stc.service_type_code.length == 3
 				end
 			end
 		end
@@ -58,8 +55,7 @@ class Manifest
 	
 	def generate_international_details()
 		@rates.each do |rate|
-			detail = International_Detail_Record.new(self, rate)
-			@details << detail
+			@details << International_Detail_Record.new(self, rate)
 		end
 	end
 
