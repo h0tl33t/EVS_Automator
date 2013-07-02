@@ -14,9 +14,14 @@ module Check_Rates
 		end
 		
 		def find_rate_for(detail)
-			baseRate = self.send("findRate#{detail.mail_class}", detail, 'base')
-			['CP','EX','FC','IE','LC','PG','PM'].include?(detail.mail_class) ? plusRate = self.send("findRate#{detail.mail_class}", detail, 'plus') : plusRate = ''
-			return baseRate, plusRate
+			unless nsa_only?(detail) #Catch detail records that have mail classes or rate indicators that are NSA-only.
+				['S2','SA'].include?(detail.mail_class) ? mail_class = 'SM' : mail_class = detail.mail_class
+				baseRate = self.send("findRate#{mail_class}", detail, 'base')
+				['CP','EX','FC','IE','LC','PG','PM'].include?(detail.mail_class) ? plusRate = self.send("findRate#{detail.mail_class}", detail, 'plus') : plusRate = ''
+				return baseRate, plusRate
+			else
+				return 'NSA Only', ''
+			end
 		end
 		#*********************************************************************************************************************************
 		def findRateBB(detail, rateTier)
@@ -253,7 +258,7 @@ module Check_Rates
 			pmodRateTable = loadTable("pmodOther.csv") if detail.destination_rate_indicator != 'D'
 			pmodRateTable.each do |pmodRate|
 				return pmodRate[detail.domestic_zone] if detail.rate_indicator == pmodRate['Rate Indicator'] and rateTier == 'plus'
-				return '' if ['O5','O6','O7','O8'].include?(detail.rate_indicator) #O5 through O8 are CSSC only PMOD Container rates.  There are no published rates for them.
+				#return 'NSA Only' if ['O5','O6','O7','O8'].include?(detail.rate_indicator) #O5 through O8 are CSSC only PMOD Container rates.  There are no published rates for them.
 				return '' if detail.rate_indicator == pmodRate['Rate Indicator'] and rateTier == 'base'
 			end
 			
@@ -338,9 +343,6 @@ module Check_Rates
 		end
 		#*********************************************************************************************************************************
 		def findRateRP(detail, rateTier)
-			#detail.domestic_zone = '00' if ['01','02'].include?(detail.domestic_zone)
-			#detail.weight = formatPounds(detail.weight) if rateTier == 'base'
-			
 			#No published rate table for RP.
 			return ''
 		end
@@ -454,6 +456,13 @@ module Check_Rates
 			else
 				return weight
 			end
+		end
+		#*********************************************************************************************************************************
+		#Determine whether the detail record is NSA-only.
+		def nsa_only?(detail)
+			return true if detail.mail_class == 'MT' #Metro Post is NSA only.
+			return true if ['B4','B5','B6','B7','B8','B9','O5','O6','O7','O8','IA','IB','IC'].include?(detail.rate_indicator)
+			#B4-B9 are PS NSA-Only Rates.  O5-O8 are PMOD NSA-Only rates.  IA, IB, and IC are PMI NSA-Only rates.
 		end
 		#*********************************************************************************************************************************
 		def loadTable(tableName)
