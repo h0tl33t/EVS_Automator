@@ -8,7 +8,9 @@ module Check_Rates
 				start_weight = detail.weight #Baseline the original weight, rate check processes re-format the weights as necessary for rate calculation.
 				baseRate, plusRate = find_rate_for(detail)
 				detail.weight = start_weight #Revert weight formatting to original weight value/formatting so the manifest object's state is uniform when passed to any file generator.
-				rate_data << ["'#{detail.tracking_number}'", detail.processing_category, detail.rate_indicator, detail.destination_rate_indicator, detail.length, detail.height, detail.width, detail.weight, detail.domestic_zone, baseRate, plusRate]
+				discount_surcharge = evaluate_discount_surcharge_type(detail) || ''
+				rate_data << ["'#{detail.tracking_number}'", detail.mail_class, detail.processing_category, detail.rate_indicator, detail.destination_rate_indicator, discount_surcharge, detail.barcode, detail.length, detail.height, detail.width, formatPounds(detail.weight), detail.domestic_zone, baseRate, plusRate] if detail.mail_class.domestic?
+				rate_data << ["'#{detail.tracking_number}'", detail.mail_class, detail.processing_category, detail.rate_indicator, detail.destination_rate_indicator, discount_surcharge, detail.barcode, detail.length, detail.height, detail.width, formatPounds(detail.weight), "#{detail.customer_reference_number_1} (#{detail.destination_country_code})", baseRate, plusRate] unless detail.mail_class.domestic?
 			end
 			create_rate_check_file(manifest.header.electronic_file_number, manifest.mail_class, rate_data)
 		end
@@ -125,6 +127,8 @@ module Check_Rates
 			detail.weight = formatOunces(detail.weight) if rateTier == 'base'
 			detail.rate_indicator = 'MA' if detail.rate_indicator == 'SP'
 			
+			surcharge = evaluate_fc_surcharge(detail)
+
 			retailRateTable = loadTable("retailFC.csv") #Catch Rate Indicator 'S2' which uses FC Retail Rate Tables
 			if retailRateTable[0].keys.include?(detail.rate_indicator)
 				retailRateTable.each do |rate|
@@ -135,13 +139,13 @@ module Check_Rates
 			baseRateTable = loadTable("baseFC.csv")
 			baseRateTable.each do |rate|
 				if detail.weight.to_f <= rate['Weight'].to_f
-					return rate[detail.rate_indicator] if rate.keys.include?(detail.rate_indicator)
+					return (rate[detail.rate_indicator].to_f + surcharge).round(2).to_s if rate.keys.include?(detail.rate_indicator)
 				end
 			end
 			plusRateTable = loadTable("plusFC.csv")
 			plusRateTable.each do |rate|
 				if detail.weight.to_f <= rate['Weight'].to_f
-					return rate[detail.rate_indicator] if rate.keys.include?(detail.rate_indicator) and rateTier == 'plus'
+					return (rate[detail.rate_indicator].to_f + surcharge).round(2).to_s if rate.keys.include?(detail.rate_indicator) and rateTier == 'plus'
 					return '' if rate.keys.include?(detail.rate_indicator) and rateTier == 'base' #Comm Plus FC Rate Indicators filter if price tier is set to 'base'.
 				end
 			end
@@ -283,47 +287,51 @@ module Check_Rates
 			detail.domestic_zone = '00' if ['01','02'].include?(detail.domestic_zone)
 			detail.weight = formatPounds(detail.weight)
 			
+			dndc_nonmachinable_surcharge_discount, dscf_nonmachinable_surcharge_discount = evaluate_ps_with_special_handling(detail)
+			
 			if detail.destination_rate_indicator == 'B'
 				rateTable = loadTable("PSDestEntry3B.csv") if detail.processing_category == '3'
-				rateTable = loadTable("PSDestEntry5DorB.csv") if detail.processing_category == '5'
+				rateTable = loadTable("PSDestEntry5B.csv") if detail.processing_category == '5'
 				rateTable.each do |rate|
 					if detail.rate_indicator == 'BN'
-						return rate[detail.domestic_zone] if rate['Weight'] == 'BN' #Catches 'BN' (Balloon) rate cells.
+						return (rate[detail.domestic_zone].to_f - dndc_nonmachinable_surcharge_discount).to_s if rate['Weight'] == 'BN' #Catches 'BN' (Balloon) rate cells.
 					elsif detail.rate_indicator == 'OS'
 						return rate[detail.domestic_zone] if rate['Weight'] == 'OS' #Catches 'OS' (Balloon) rate cells.
-					elsif detail.weight.to_f <= rate['Weight'].to_f
-						return rate[detail.domestic_zone]
+					else
+						return (rate[detail.domestic_zone].to_f - dndc_nonmachinable_surcharge_discount).to_s if detail.weight.to_f <= rate['Weight'].to_f
 					end
 				end
-			elsif detail.processing_category == '5' and detail.destination_rate_indicator == 'D'
-				rateTable = loadTable("PSDestEntry5DorB.csv")
+			elsif detail.destination_rate_indicator == 'D'
+				rateTable = loadTable("PSDestEntryDDU.csv")
 				rateTable.each do |rate|
 					if detail.rate_indicator == 'BN'
-						return rate[detail.domestic_zone] if rate['Weight'] == 'BN' #Catches 'BN' (Balloon) rate cells.
+						return rate[detail.processing_category] if rate['Weight'] == 'BN'
 					elsif detail.rate_indicator == 'OS'
-						return rate[detail.domestic_zone] if rate['Weight'] == 'OS' #Catches 'OS' (Balloon) rate cells.
-					elsif detail.weight.to_f <= rate['Weight'].to_f
-						return rate[detail.domestic_zone]
+						return rate[detail.processing_category] if rate['Weight'] == 'OS'
+					else
+						return rate[detail.processing_category] if detail.weight.to_f <= rate['Weight'].to_f
 					end
 				end
-			elsif detail.processing_category == '3' and (detail.destination_rate_indicator == 'D' or detail.destination_rate_indicator == 'S')
-				rateTable = loadTable("PSDestEntry3DorS.csv")
+			elsif detail.destination_rate_indicator == 'S' and detail.processing_category == '3'
+				rateTable = loadTable("PSDestEntry3S.csv")
 				rateTable.each do |rate|
 					if detail.rate_indicator == 'BN'
 						return rate[detail.destination_rate_indicator] if rate['Weight'] == 'BN' #Catches 'BN' (Balloon) rate cells.
-					elsif detail.weight.to_f <= rate['Weight'].to_f
-						return rate[detail.destination_rate_indicator]
+					else
+						return rate[detail.destination_rate_indicator] if detail.weight.to_f <= rate['Weight'].to_f
 					end
 				end
-			elsif detail.processing_category == '5' and detail.destination_rate_indicator == 'S'
+			elsif detail.destination_rate_indicator == 'S' and detail.processing_category == '5'
 				rateTable = loadTable("PSDestEntry5S.csv")
 				rateTable.each do |rate|
 					if detail.rate_indicator == 'BN'
-						return rate['5D'] if rate['Weight'] == 'BN' #Catches 'BN' (Balloon) rate cells.  5 BN S uses 5-Digit (5D) rate column.
+						return (rate['5D'].to_f - dscf_nonmachinable_surcharge_discount).to_s if rate['Weight'] == 'BN' #Catches 'BN' (Balloon) rate cells.  5 BN S uses 5-Digit (5D) rate column.
 					elsif detail.rate_indicator == 'OS'
 						return rate['5D'] if rate['Weight'] == 'OS' #Catches 'OS' (Balloon) rate cells. 5 OS S uses 5-Digit (5D) rate column.
-					elsif detail.weight.to_f <= rate['Weight'].to_f
-						return rate[detail.rate_indicator]
+					elsif detail.rate_indicator == 'B3'
+						return (rate['3D'].to_f - dscf_nonmachinable_surcharge_discount).to_s if rate['Weight'] == 'BN' #Catches 'B3' (3-Digit Balloon) rate cells.
+					else
+						return (rate[detail.rate_indicator].to_f - dscf_nonmachinable_surcharge_discount).to_s if detail.weight.to_f <= rate['Weight'].to_f
 					end
 				end
 			end
@@ -336,20 +344,21 @@ module Check_Rates
 					return rate[detail.domestic_zone] if rate['Weight'] == 'BN' #Catches 'BN' (Balloon) rate cells.
 				elsif detail.rate_indicator == 'OS'
 					return rate[detail.domestic_zone] if rate['Weight'] == 'OS' #Catches 'OS' (Balloon) rate cells.
-				elsif detail.weight.to_f <= rate['Weight'].to_f
-					return rate[detail.domestic_zone]
+				else
+					return rate[detail.domestic_zone] if detail.weight.to_f <= rate['Weight'].to_f
 				end
 			end
 		end
 		#*********************************************************************************************************************************
 		def findRateRP(detail, rateTier)
-			#No published rate table for RP.
+			#PRS does not have a variance report that provides the piece-level information necessary for rate validation.
+			#In order to validate PRS rates, EVS IT needs to pull the data from the DB based on the PRS manifest's EFN.
 			return ''
 		end
 		#*********************************************************************************************************************************
 		def findRateSM(detail, rateTier)
 			nonBarcodedSurcharge = 0.064 #The non-barcoded surcharge is added to any piece with barcode value '0' and is NOT 5-Digit sort (Rate Indicator '5D' for-profit, 'N5' non-profit)
-			detail.weight = formatPounds(detail.weight, true)
+			detail.weight = formatPounds(detail.weight, 4)
 			nonProfit = is_non_profit?(detail.rate_indicator)
 			
 			if nonProfit
@@ -398,12 +407,10 @@ module Check_Rates
 		end
 		#*********************************************************************************************************************************
 		#Re-format weight from manifest formatting
-		def formatPounds(value, *standardMailFlag)
+		def formatPounds(value, decimal_places = 2)
 			wholeNum = value[1, 4] #Pulls the 2nd (A), 3rd (B), 4th (C) and 5th (D) digit from the format 0ABCDdddd where 'd' is the decimal portion of the eVS weight convention
 			decimal = value[5, 4]  #Pulls the decimal portion
-			return "#{wholeNum}.#{decimal}".to_f.round(4).to_s if standardMailFlag[0] #If standard mail, round weight to 4 decimal places instead of 2.
-			return "#{wholeNum}.#{decimal}".to_f.round(2).to_s
-			
+			return "#{wholeNum}.#{decimal}".to_f.round(decimal_places).to_s
 		end
 		#*********************************************************************************************************************************
 		#Re-format weight from manifest formatting
@@ -465,6 +472,60 @@ module Check_Rates
 			#B4-B9 are PS NSA-Only Rates.  O5-O8 are PMOD NSA-Only rates.  IA, IB, and IC are PMI NSA-Only rates.
 		end
 		#*********************************************************************************************************************************
+		#Return Discount Type or Surcharge Type if a given detail record contains a non-empty value for discount/surcharge type fields.
+		def evaluate_discount_surcharge_type(detail)
+			return detail.discount_type if detail.discount_type != ''
+			return detail.surcharge_type if detail.surcharge_type != ''
+		end
+		#*********************************************************************************************************************************
+		def evaluate_fc_surcharge(detail)
+			if ['3D','AD'].include?(detail.rate_indicator) and detail.processing_category == '5'
+				return 0.08 #Non-machinable pieces not in a 5-Digit Scheme get the 0.08 surcharge.
+			elsif ['3D','AD','U3','U5','UA','US'].include?(detail.rate_indicator) and detail.processing_category == '3' and detail.barcode == '0'
+				return 0.08 #Machinable pieces without a barcode get the 0.08 surcharge.
+			else
+				return 0.00 #Otherwise, no surcharge.
+			end
+		end
+		#*********************************************************************************************************************************
+		#Calculates Parcel Select non-machinable pricing when Special Handling is used.
+		def evaluate_ps_with_special_handling(detail) #Return DNDC and DSCF nonmachinable surcharge discount rates (or FALSE if not-applicable).
+			dndc_discount = 0 #Initial value set to 0.
+			dscf_discount = 0 #Initial value set to 0.
+			
+			#For DNDC (B), only applicable for rate indicators SP and BN that have PC 5 (Non-machinable)
+			#For DSCF (S), only applicable for rate indicators 3D and B3 (3Digit Balloon) that have PC 5 (Non-machinable)
+			
+			if detail.comb_values(true).include?('970') #Catch extra-service-code '970' (Special Handling)
+				if detail.destination_rate_indicator == 'B' and detail.processing_category == '5' and ['SP','BN'].include?(detail.rate_indicator) #Non-machinable DNDC
+					machinable_rate = 0
+					nonmachinable_rate = 0
+					["PSDestEntry3B.csv", "PSDestEntry5B.csv"].each do |rate_table_file|
+						rateTable = loadTable(rate_table_file)
+						if rate_table_file.include?('3')
+							machinable_rate = rateTable.first[detail.domestic_zone].to_f
+						elsif rate_table_file.include?('5')
+							nonmachinable_rate = rateTable.first[detail.domestic_zone].to_f
+						end
+					end
+					dndc_discount = nonmachinable_rate - machinable_rate
+				elsif detail.destination_rate_indicator == 'S' and detail.processing_category == '5' and ['3D','B3'].include?(detail.rate_indicator) #Non-machinable DSCF
+					machinable_rate = 0
+					nonmachinable_rate = 0
+					["PSDestEntry3S.csv", "PSDestEntry5S.csv"].each do |rate_table_file|
+						rateTable = loadTable(rate_table_file)
+						if rate_table_file.include?('3')
+							machinable_rate = rateTable.first['S'].to_f
+						elsif rate_table_file.include?('5')
+							nonmachinable_rate = rateTable.first['3D'].to_f
+						end
+					end
+					dscf_discount = nonmachinable_rate - machinable_rate
+				end
+			end
+			return dndc_discount.round(2), dscf_discount.round(2)
+		end
+		#*********************************************************************************************************************************
 		def loadTable(tableName)
 			rateTable = []
 			rateCells = {}
@@ -484,7 +545,8 @@ module Check_Rates
 		#*********************************************************************************************************************************
 		def create_rate_check_file(efn, mail_class, rate_data)
 			file = File.open("#{$rate_validation_path}/#{efn}_rateCheck#{mail_class}.csv",'w')
-			file.write("Tracking Number,PC,RI,DRI,Length,Height,Width,Weight,Zone,Base Rate,Plus Rate")
+			file.write("Tracking Number,Mail Class,PC,RI,DRI,Discount/Surcharge,Barcode,Length,Height,Width,Weight,Zone,Base Rate,Plus Rate") if mail_class.domestic?
+			file.write("Tracking Number,Mail Class,PC,RI,DRI,Discount/Surcharge,Barcode,Length,Height,Width,Weight,Price Group,Base Rate,Plus Rate") unless mail_class.domestic?
 			rate_data.each do |rate|
 				file.write("\n")
 				file.write(rate.join(','))

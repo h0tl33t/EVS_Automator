@@ -53,27 +53,27 @@ class IMD_Record < Sample_Record
 		@shape_based_rate_indicator, @sortation_level = check_for_special_cases(detail) if detail.mail_class == 'IE'
 		@processing_category = detail.processing_category
 		@package_size_and_other_criteria_indicator ||= 'N'
-		detail.comb_values.include?('920') ? @delivery_confirmation = 'Y' : @delivery_confirmation = 'N' #Extra Service Code 920 is Delivery Confirmation
-		detail.comb_values.include?('921') ? @signature_confirmation = 'Y' : @signature_confirmation = 'N' #Extra Service Code 921 is Signature Confirmation
-		detail.comb_values.include?('910') ? @certified_mail = 'Y' : @certified_mail = 'N' #Extra Service Code 910 is Certified Mail
-		detail.comb_values.include?('955') ? @return_receipts = 'Y' : @return_receipts = 'N' #Extra Service Code 955 is Return Receipt
-		detail.comb_values.include?('960') ? @return_receipt_for_merchandise = 'Y' : @return_receipt_for_merchandise = 'N' #Extra Service Code 960 is Return Receipt for Merchandise
-		detail.comb_values.include?('915') ? @cod = 'Y' : @cod = 'N' #Extra Service Code 915 is Cash on Delivery (COD)
+		detail.comb_values(true).include?('920') ? @delivery_confirmation = 'Y' : @delivery_confirmation = 'N' #Extra Service Code 920 is Delivery Confirmation
+		detail.comb_values(true).include?('921') ? @signature_confirmation = 'Y' : @signature_confirmation = 'N' #Extra Service Code 921 is Signature Confirmation
+		detail.comb_values(true).include?('910') ? @certified_mail = 'Y' : @certified_mail = 'N' #Extra Service Code 910 is Certified Mail
+		detail.comb_values(true).include?('955') ? @return_receipts = 'Y' : @return_receipts = 'N' #Extra Service Code 955 is Return Receipt
+		detail.comb_values(true).include?('960') ? @return_receipt_for_merchandise = 'Y' : @return_receipt_for_merchandise = 'N' #Extra Service Code 960 is Return Receipt for Merchandise
+		detail.comb_values(true).include?('915') ? @cod = 'Y' : @cod = 'N' #Extra Service Code 915 is Cash on Delivery (COD)
 		@value_of_cod = convert_dollars(detail.cod_amount_due_sender) if @cod == 'Y'
-		detail.comb_values.include?('950') ? @restricted_delivery = 'Y' : @restricted_delivery = 'N' #Extra Service Code 910 is Restricted Delivery
-		detail.comb_values.include?('970') ? @special_handling_less_than_10 = 'Y' : @special_handling_less_than_10 = 'N' #Extra Service Code 970 is Special Handling
-		detail.comb_values.include?('970') ? @special_handling_more_than_10 = 'Y' : @special_handling_more_than_10 = 'N' #Extra Service Code 970 is Special Handling
-		detail.comb_values.include?('930') ? (@insured, @insurance_less_than_200 = '2', 'Y') : (@insured, @insurance_less_than_200 = '0', 'N') ##Extra Service Codes 930 is Insurance Less Than 200
-		detail.comb_values.include?('931') ? (@insured, @insurance_more_than_200 = '2', 'Y') : (@insured, @insurance_more_than_200 = '0', 'N') ##Extra Service Codes 930 is Insurance Less Than 200
+		detail.comb_values(true).include?('950') ? @restricted_delivery = 'Y' : @restricted_delivery = 'N' #Extra Service Code 910 is Restricted Delivery
+		detail.comb_values(true).include?('970') ? @special_handling_less_than_10 = 'Y' : @special_handling_less_than_10 = 'N' #Extra Service Code 970 is Special Handling
+		detail.comb_values(true).include?('970') ? @special_handling_more_than_10 = 'Y' : @special_handling_more_than_10 = 'N' #Extra Service Code 970 is Special Handling
+		detail.comb_values(true).include?('930') ? (@insured, @insurance_less_than_200 = '2', 'Y') : (@insured, @insurance_less_than_200 = '0', 'N') ##Extra Service Codes 930 is Insurance Less Than 200
+		detail.comb_values(true).include?('931') ? (@insured, @insurance_more_than_200 = '2', 'Y') : (@insured, @insurance_more_than_200 = '0', 'N') ##Extra Service Codes 930 is Insurance Less Than 200
 		@mail_class = detail.mail_class
 		@comments = ''.rjust(240, ' ')
 		@destination_country_code = detail.destination_country_code.rjust(2,' ')
 		@scan_date_time = "#{Time.now.strftime('%m%d%Y')}#{imd.manifest.time}"
-		detail.comb_values.include?('957') ? @return_receipt_electronic = 'Y' : @return_receipt_electronic = 'N' #Extra Service Code 957 is Return Receipt Electronic (RRE)
+		detail.comb_values(true).include?('957') ? @return_receipt_electronic = 'Y' : @return_receipt_electronic = 'N' #Extra Service Code 957 is Return Receipt Electronic (RRE)
 		check_if_merchandise_return(detail.service_type_code) ? @merchandise_return = 'Y' : @merchandise_return = 'N'
-		detail.comb_values.include?('922') ? @adult_signature = 'Y' : @adult_signature = 'N' #Extra Service Code 921 is Adult Signature
-		detail.comb_values.include?('985') ? @hold_for_pick_up = 'Y' : @hold_for_pick_up = 'N' #Extra Service Code 921 is Hold for Pick Up
-		detail.comb_values.include?('990') ? @day_certain_delivery = 'Y' : @day_certain_delivery = 'N' #Extra Service Code 921 is Day Certain Delivery
+		detail.comb_values(true).include?('922') ? @adult_signature = 'Y' : @adult_signature = 'N' #Extra Service Code 921 is Adult Signature
+		detail.comb_values(true).include?('985') ? @hold_for_pick_up = 'Y' : @hold_for_pick_up = 'N' #Extra Service Code 921 is Hold for Pick Up
+		detail.comb_values(true).include?('990') ? @day_certain_delivery = 'Y' : @day_certain_delivery = 'N' #Extra Service Code 921 is Day Certain Delivery
 		@discount_or_premium = detail.discount_type if detail.discount_type != ''
 		@discount_or_premium = detail.surcharge_type if detail.surcharge_type != ''
 	end

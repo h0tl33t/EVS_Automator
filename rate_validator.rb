@@ -86,8 +86,13 @@ class Rate_Validator
 						matchedTier, matched = "Base Rate", true if varRecord['eVS Postage + Surch ($)'].to_f.round(2) == checkRecord['Base Rate'].to_f.round(2)
 						matchedTier, matched = "Plus Rate", true if varRecord['eVS Postage + Surch ($)'].to_f.round(2) == checkRecord['Plus Rate'].to_f.round(2)
 						matchedTier, matched = "both Base and Plus Rates", true if varRecord['eVS Postage + Surch ($)'].to_f.round(2) == checkRecord['Base Rate'].to_f.round(2) and varRecord['eVS Postage + Surch ($)'].to_f.round(2) == checkRecord['Plus Rate'].to_f.round(2)
-						comparedRecords << ["'#{varRecord['PIC']}'", varRecord['Mail Class'], checkRecord['PC'], varRecord['Rate'], varRecord['Dest Rate'], varRecord['Weight'], checkRecord['Zone'], varRecord['eVS Zone'], checkRecord['Base Rate'], checkRecord['Plus Rate'], varRecord['eVS Postage + Surch ($)'], "Validated at #{matchedTier}"] if matched
-						comparedRecords << ["'#{varRecord['PIC']}'", varRecord['Mail Class'], checkRecord['PC'], varRecord['Rate'], varRecord['Dest Rate'], varRecord['Weight'], checkRecord['Zone'], varRecord['eVS Zone'], checkRecord['Base Rate'], checkRecord['Plus Rate'], varRecord['eVS Postage + Surch ($)'], "Matching rate not found."] unless matched
+						if checkRecord['Mail Class'].domestic?
+							comparedRecords << ["'#{varRecord['PIC']}'", varRecord['Mail Class'], checkRecord['PC'], varRecord['Rate'], varRecord['Dest Rate'], checkRecord["Discount/Surcharge"], checkRecord['Barcode'], varRecord['Weight'], checkRecord['Zone'], varRecord['eVS Zone'], checkRecord['Base Rate'], checkRecord['Plus Rate'], varRecord['eVS Postage + Surch ($)'], "Validated at #{matchedTier}"] if matched
+							comparedRecords << ["'#{varRecord['PIC']}'", varRecord['Mail Class'], checkRecord['PC'], varRecord['Rate'], varRecord['Dest Rate'], checkRecord["Discount/Surcharge"], checkRecord['Barcode'], varRecord['Weight'], checkRecord['Zone'], varRecord['eVS Zone'], checkRecord['Base Rate'], checkRecord['Plus Rate'], varRecord['eVS Postage + Surch ($)'], "Matching rate not found."] unless matched
+						else
+							comparedRecords << ["'#{varRecord['PIC']}'", varRecord['Mail Class'], checkRecord['PC'], varRecord['Rate'], varRecord['Dest Rate'], checkRecord["Discount/Surcharge"], checkRecord['Barcode'], varRecord['Weight'], checkRecord['Price Group'], varRecord['eVS Zone'], checkRecord['Base Rate'], checkRecord['Plus Rate'], varRecord['eVS Postage + Surch ($)'], "Validated at #{matchedTier}"] if matched
+							comparedRecords << ["'#{varRecord['PIC']}'", varRecord['Mail Class'], checkRecord['PC'], varRecord['Rate'], varRecord['Dest Rate'], checkRecord["Discount/Surcharge"], checkRecord['Barcode'], varRecord['Weight'], checkRecord['Price Group'], varRecord['eVS Zone'], checkRecord['Base Rate'], checkRecord['Plus Rate'], varRecord['eVS Postage + Surch ($)'], "Matching rate not found."] unless matched
+						end
 						matched = false
 						checkRecord.clear
 					end
@@ -142,7 +147,7 @@ class Rate_Validator
 	#*********************************************************************************************************************************
 	def logResults(results) #Where results is a 2-dimensional array (array of arrays) with each sub-array representing a single line of results
 		log = File.open("#{$rate_validation_path}/#{@efn}_validationResults.csv",'a')
-		log.write("Tracking Number,Mail Class,Processing Category,Rate Indicator,Destination Rate Indicator,Weight,Manifest Zone,EVS Zone,Base Rate,Plus Rate,Variance Rate,Validation Result")
+		log.write("Tracking Number,Mail Class,Processing Category,Rate Indicator,Destination Rate Indicator,Discount/Surcharge,Barcode,Weight,Manifest Zone,EVS Zone,Base Rate,Plus Rate,Variance Rate,Validation Result")
 		results.each do |line|
 			line = line.join(",")
 			log.write("\n")

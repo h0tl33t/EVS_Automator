@@ -67,10 +67,14 @@ module File_Builder
 		return selected_object
 	end
 	#*********************************************************************************************************************************
-	def comb_values()
+	def comb_values(extra_services_only = false)
 		values = []
 		self.instance_variables.each do |var|
-			values << self.get(var)
+			if extra_services_only
+				values << self.get(var) if var.to_s.include?('extra_service')
+			else
+				values << self.get(var)
+			end
 		end
 		return values
 	end

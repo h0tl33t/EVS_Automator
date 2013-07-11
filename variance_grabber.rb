@@ -7,7 +7,7 @@ class Variance_Grabber
 	def initialize()
 		puts "Welcome to the Variance Grabber!"
 		urls = ['https://cat1a.uspspostalone.com/postal1/index.cfm?com=false','https://uspspostalone.com/', 'http://www.google.com']
-		url = pickURL(urls)
+		url = pick_url(urls)
 		
 		@ie = Watir::Browser.new
 		@ie.goto(urls[url])	#To pick a URL
@@ -23,10 +23,17 @@ class Variance_Grabber
 		@ie.close
 	end
 	#*********************************************************************************************************************************
-	def pickURL(urls)
+	def pick_url(urls)
 		puts "Enter the number of the URL you want to navigate to:"
 		urls.each_with_index {|u, i| puts "#{i+1}) #{u}"}
 		url = gets.chomp.to_i - 1
+	end
+	#*********************************************************************************************************************************
+	def select_mailer
+		puts "****USER INPUT REQUIRED!****"
+		puts "Click on the mailer for which the varaince reports should be pulled."
+		puts "Once done, press any key to continue."
+		gets
 	end
 	#*********************************************************************************************************************************
 	def drive()
@@ -34,11 +41,16 @@ class Variance_Grabber
 		roleLink = ''
 		links.each {|eachLink| @main.link(:href, eachLink.href).click if eachLink.href.include?('e-VS Admin Super User')}
 
-		@main.link(:text, 'AUTOMATED TESTING').click
-		#sleep(1) until @main.link(:href, "#ui-tabs-2").exists?
-		#@main.link(:href, "#ui-tabs-2").click
-		sleep(1) until @main.link(:text, 'Total manifest postage').exists?
-		@main.link(:text, 'Total manifest postage').click
+		#@main.link(:text, 'AUTOMATED TESTING').click
+		select_mailer()
+		sleep(1)
+		if @main.link(:text, 'Total manifest postage').exists?
+			@main.link(:text, 'Total manifest postage').click
+		else
+			@main.link(:href, "#ui-tabs-2").click if @main.link(:href, "#ui-tabs-2").exists?
+			sleep(1) until @main.link(:text, 'Total manifest postage').exists?
+			@main.link(:text, 'Total manifest postage').click
+		end
 		
 		efns = {}
 		rateCheckEFNs = grabRateCheckEFNs()
