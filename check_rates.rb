@@ -215,6 +215,7 @@ module Check_Rates
 		#*********************************************************************************************************************************
 		def findRatePG(detail, rateTier)
 			detail.customer_reference_number_1 = formatGroup(detail.customer_reference_number_1)
+			detail.customer_reference_number_1 = '2' if detail.customer_reference_number_1 != '1' and detail.rate_indicator == 'LE' #Legal Flat Rate Envelopes are Price Group 1 or 2 only. 
 			detail.weight = formatPounds(detail.weight) if rateTier == 'base'
 			
 			rateTable = loadTable("basePG.csv") if rateTier == 'base'

@@ -6,7 +6,7 @@ require 'win32ole'
 class Variance_Grabber
 	def initialize()
 		puts "Welcome to the Variance Grabber!"
-		urls = ['https://cat1a.uspspostalone.com/postal1/index.cfm?com=false','https://uspspostalone.com/', 'http://www.google.com']
+		urls = ['https://cat1a.uspspostalone.com/postal1/index.cfm?com=false','https://uspspostalone.com/postal1/index_enabled.cfm', 'http://www.google.com']
 		url = pick_url(urls)
 		
 		@ie = Watir::Browser.new
