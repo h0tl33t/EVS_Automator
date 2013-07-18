@@ -36,7 +36,7 @@ class Variance_Grabber
 	#*********************************************************************************************************************************
 	def select_mailer
 		puts "****USER INPUT REQUIRED!****"
-		puts "Click on the mailer for which the varaince reports should be pulled."
+		puts "Click on the mailer for which the variance reports should be pulled."
 		puts "Once done, press any key to continue."
 		gets
 	end
