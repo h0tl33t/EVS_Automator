@@ -7,8 +7,10 @@ class Variance_Grabber
 	def initialize()
 		puts "Welcome to the Variance Grabber!"
 		
+		url = pick_environment #Returns URL for selected environment (DEV, SIT, CAT, PROD)
+		
 		@ie = Watir::Browser.new
-		@ie.goto(pick_environment)	#Opens Watir Browser with URL for selected environment (DEV, SIT, CAT, PROD)
+		@ie.goto(url)
 		sleep(1)
 		
 		if @ie.frame(:name, "portal_main").exists?
@@ -20,16 +22,16 @@ class Variance_Grabber
 		@ie.close
 	end
 	#*********************************************************************************************************************************
-	def pick_environment(urls)
-		environments = {'DEV' => 'https://dev1a.uspspostalone.com/postal1/index.cfm?com=false'
-						'CAT' => 'https://cat1a.uspspostalone.com/postal1/index.cfm?com=false'
-						'SIT' => 'https://sit1a.uspspostalone.com/postal1/index.cfm?com=false'
+	def pick_environment
+		environments = {'DEV' => 'https://dev1a.uspspostalone.com/postal1/index.cfm?com=false',
+						'CAT' => 'https://cat1a.uspspostalone.com/postal1/index.cfm?com=false',
+						'SIT' => 'https://sit1a.uspspostalone.com/postal1/index.cfm?com=false',
 						'PROD' => 'https://uspspostalone.com/postal1/index_enabled.cfm'}
 						
 		puts "What environment contains the associated variance reports for the rate check files you want to validate?"
-		environments.each {|e| puts e}
+		environments.each_key {|e| puts e}
 		env = gets.chomp.upcase
-		environments.keys.include?(env) ? environments[env] : 'http://www.google.com'
+		environments.keys.include?(env) ? environments[env] : 'http://www.google.com' #Need a fall-back URL in order to compile OCRA executable.  PO environments require USPS Intranet. 
 	end
 	#*********************************************************************************************************************************
 	def select_mailer
