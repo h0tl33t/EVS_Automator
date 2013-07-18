@@ -6,15 +6,12 @@ require 'win32ole'
 class Variance_Grabber
 	def initialize()
 		puts "Welcome to the Variance Grabber!"
-		urls = ['https://cat1a.uspspostalone.com/postal1/index.cfm?com=false','https://uspspostalone.com/postal1/index_enabled.cfm', 'http://www.google.com']
-		url = pick_url(urls)
 		
 		@ie = Watir::Browser.new
-		@ie.goto(urls[url])	#To pick a URL
-		#@ie.goto(urls[1])	#To automatically load PostalOne! CAT
+		@ie.goto(pick_environment)	#Opens Watir Browser with URL for selected environment (DEV, SIT, CAT, PROD)
 		sleep(1)
 		
-		if url != 2
+		if @ie.frame(:name, "portal_main").exists?
 			@main = @ie.frame(:name, "portal_main")
 			user, pass = getUserPass()
 			login(user, pass)
@@ -23,10 +20,16 @@ class Variance_Grabber
 		@ie.close
 	end
 	#*********************************************************************************************************************************
-	def pick_url(urls)
-		puts "Enter the number of the URL you want to navigate to:"
-		urls.each_with_index {|u, i| puts "#{i+1}) #{u}"}
-		url = gets.chomp.to_i - 1
+	def pick_environment(urls)
+		environments = {'DEV' => 'https://dev1a.uspspostalone.com/postal1/index.cfm?com=false'
+						'CAT' => 'https://cat1a.uspspostalone.com/postal1/index.cfm?com=false'
+						'SIT' => 'https://sit1a.uspspostalone.com/postal1/index.cfm?com=false'
+						'PROD' => 'https://uspspostalone.com/postal1/index_enabled.cfm'}
+						
+		puts "What environment contains the associated variance reports for the rate check files you want to validate?"
+		environments.each {|e| puts e}
+		env = gets.chomp.upcase
+		environments.keys.include?(env) ? environments[env] : 'http://www.google.com'
 	end
 	#*********************************************************************************************************************************
 	def select_mailer
@@ -41,7 +44,6 @@ class Variance_Grabber
 		roleLink = ''
 		links.each {|eachLink| @main.link(:href, eachLink.href).click if eachLink.href.include?('e-VS Admin Super User')}
 
-		#@main.link(:text, 'AUTOMATED TESTING').click
 		select_mailer()
 		sleep(1)
 		if @main.link(:text, 'Total manifest postage').exists?
