@@ -20,7 +20,7 @@ class Duplicate_Package_Extract_Record < Sample_Record
 		@event_type = ['01','16'].sample #Event types for duplicate package are either '01' or '16' -- set at random w/ sample().
 		@event_date = extract.date
 		@event_time = Time.now.strftime('%H%M')
-		@pic = detail.tracking_number
+		@pic = detail.tracking_number.ljust(34, ' ')
 		@electronic_file_number = extract.manifest.header.electronic_file_number.ljust(34, ' ')
 		@event_zip = rand(10000..99999).to_s
 		@mailer_id = detail.mail_owner_mailer_id

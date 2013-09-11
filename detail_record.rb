@@ -150,10 +150,10 @@ class International_Detail_Record < Detail_Record #Need to inherit PIC and be ab
 			@tracking_number = "LX600#{rand(999999).to_s.rjust(6, '0')}US"
 			@barcode_construct_code = 'I01'
 		when 'PG'
-			@tracking_number = "83500#{rand(99999).to_s.rjust(5, '0')}"
+			@tracking_number = "83500#{rand(999999).to_s.rjust(6, '0')}"
 			@barcode_construct_code = 'G01'
 		when 'IE'
-			@tracking_number = "AA100#{rand(999999).to_s.rjust(6, '0')}US"
+			@tracking_number = "EI100#{rand(999999).to_s.rjust(6, '0')}US"
 			@barcode_construct_code = 'I01'
 		when 'CP'
 			@tracking_number = "CB600#{rand(999999).to_s.rjust(6, '0')}US"
