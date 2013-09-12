@@ -10,7 +10,7 @@ class Unmanifested_Extract < Sample
 	
 	def modify_pics_for(manifest) #Change manifested PICs to random PICs for unmanifested processing.
 		manifest.details.each do |detail|
-      detail.mail_class.domestic? ? detail.tracking_number[26,8] = rand(1..99999999).to_s.ljust(8, '0') : detail.tracking_number[5,6] = rand(999999).to_s.rjust(6, '0')
+      detail.mail_class.domestic? ? detail.tracking_number[26,8] = rand(1..99999999).to_s.ljust(8, '0') : detail.tracking_number[5,5] = rand(99999).to_s.rjust(5, '0')
 		end
 	end	
 end
