@@ -6,8 +6,14 @@ class Duplicate_Package_Extract < Sample
 		super(manifest)
 		set_file_names('.dat')
 		generate_records()
+    update_record_counts
 		build(self)
 	end
+  
+  def update_record_counts
+    count = @records.size > 999 ? '999' : @records.size.to_s.rjust(3, ' ')
+    @records.each {|record| record.record_count = count }
+  end
 end
 
 #*********************************************************************************************************************************

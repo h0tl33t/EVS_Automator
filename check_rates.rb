@@ -29,6 +29,7 @@ module Check_Rates
 		def findRateBB(detail, rateTier)
 			detail.domestic_zone = '01' if detail.domestic_zone == '02'
 			detail.weight = formatPounds(detail.weight)
+      detail.weight = detail.weight.to_f < 1.0 ? '1.00' : detail.weight
 			
 			if detail.rate_indicator == "NP"
 				rateTable = loadTable("BBNP.csv")
@@ -41,7 +42,7 @@ module Check_Rates
 					rateTable.each do |rate|
 						if detail.domestic_zone == rate['Zone']
 							rateTotal = rate['Per Piece'].to_f. + (detail.weight.to_f * rate['Per Pound'].to_f)
-							return rateTotal.round(2).to_s
+							return rateTotal.round(3).to_s
 						end
 					end
 				elsif detail.destination_rate_indicator == 'N'
@@ -49,7 +50,7 @@ module Check_Rates
 					rateTable.each do |rate|
 						if detail.domestic_zone == rate['Zone']
 							rateTotal = rate['Per Piece'].to_f + (detail.weight.to_f * rate['Per Pound'].to_f)
-							return rateTotal.round(2).to_s
+							return rateTotal.round(3).to_s
 						end
 					end
 				elsif detail.destination_rate_indicator == 'S' or detail.destination_rate_indicator == 'D'
@@ -57,7 +58,7 @@ module Check_Rates
 					rateTable.each do |rate|
 						if detail.destination_rate_indicator == rate['Destination Rate Indicator']
 							rateTotal = rate['Per Piece'].to_f + (detail.weight.to_f * rate['Per Pound'].to_f)
-							return rateTotal.round(2).to_s
+							return rateTotal.round(3).to_s
 						end
 					end	
 				end
