@@ -471,6 +471,8 @@ module Check_Rates
 		def nsa_only?(detail)
 			return true if detail.mail_class == 'MT' #Metro Post is NSA only.
 			return true if ['B4','B5','B6','B7','B8','B9','O5','O6','O7','O8','IA','IB','IC'].include?(detail.rate_indicator)
+      #New PS Rate Indicators:  LW Machinable (A1, A3, A5), LW Irregular (A2, A4, A6), Extended Coverage (1B, 1C, 1D)
+      #New FC Rate Indicators:  First Class <= 5lbs (2B, 2C, 2D, 2F)
 			#B4-B9 are PS NSA-Only Rates.  O5-O8 are PMOD NSA-Only rates.  IA, IB, and IC are PMI NSA-Only rates.
 		end
 		#*********************************************************************************************************************************
